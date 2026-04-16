@@ -63,3 +63,5 @@ CREATE TABLE Supply_Items (
     -- Links this item to your master inventory list
     FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE RESTRICT
 );
+
+-- Initialize cloud database

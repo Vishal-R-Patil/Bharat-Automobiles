@@ -10,7 +10,7 @@ const receiveSupply = async (req, res) => {
 
         // 1. Insert Master Record (Supply Delivery)
         const [deliveryResult] = await connection.query(
-            'INSERT INTO supply_deliveries (supplier_name, invoice_number, total_cost) VALUES (?, ?, ?)',
+            'INSERT INTO Supply_Deliveries (supplier_name, invoice_number, total_cost) VALUES (?, ?, ?)',
             [supplyInfo.supplierName, supplyInfo.invoiceNumber, supplyInfo.totalCost]
         );
         const deliveryId = deliveryResult.insertId;
@@ -34,9 +34,9 @@ const receiveSupply = async (req, res) => {
                 }
             }
 
-            // A. Add to supply_items history
+            // A. Add to Supply_items history
             await connection.query(
-                'INSERT INTO supply_items (delivery_id, product_id, quantity_added, wholesale_price) VALUES (?, ?, ?, ?)',
+                'INSERT INTO Supply_Items (delivery_id, product_id, quantity_added, wholesale_price) VALUES (?, ?, ?, ?)',
                 [deliveryId, currentProductId, item.quantity, item.wholesale_price]
             );
 
@@ -65,7 +65,7 @@ const getSupplyHistory = async (req, res) => {
         // Fetches the master records, ordered by newest first
         const sql = `
             SELECT id, supplier_name, invoice_number, delivery_date, total_cost 
-            FROM supply_deliveries 
+            FROM Supply_Deliveries 
             ORDER BY id DESC
         `;
         const [rows] = await db.query(sql);
@@ -81,7 +81,7 @@ const getSupplyItems = async (req, res) => {
     try {
         const deliveryId = req.params.id;
         
-        // This SQL joins the historical supply_items with the live Products table.
+        // This SQL joins the historical Supply_items with the live Products table.
         // It assumes you are matching them by name (or you can change p.name = si.name to p.id = si.product_id if your schema uses IDs).
         const sql = `
             SELECT 
@@ -90,7 +90,7 @@ const getSupplyItems = async (req, res) => {
                 si.wholesale_price AS Wholesale_price,
                 p.price AS Retail_price,
                 si.quantity_added AS Quantity_added
-            FROM supply_items si
+            FROM Supply_Items si
             LEFT JOIN Products p ON si.product_id = p.id
             WHERE si.delivery_id = ?
         `;
