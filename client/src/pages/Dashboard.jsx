@@ -230,7 +230,7 @@ function Dashboard() {
                 <button onClick={() => setActiveTab('inventory')} style={{ padding: '10px 20px', background: activeTab === 'inventory' ? '#0056b3' : '#e9ecef', color: activeTab === 'inventory' ? 'white' : 'black', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>View Inventory</button>
                 <button onClick={() => setActiveTab('addStock')} style={{ padding: '10px 20px', background: activeTab === 'addStock' ? '#0056b3' : '#e9ecef', color: activeTab === 'addStock' ? 'white' : 'black', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Receive Supply</button>
                 <button onClick={() => setActiveTab('history')} style={{ padding: '10px 20px', background: activeTab === 'history' ? '#0056b3' : '#e9ecef', color: activeTab === 'history' ? 'white' : 'black', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Supply History</button>
-                <button onClick={() => navigate('/billing')} style={{ padding: '10px 20px', background: activeTab === 'billing' ? '#28a745' : '#e9ecef', color: activeTab === 'billing' ? 'white' : 'black', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Billing Desk 💰</button>
+                <button onClick={() => navigate('/billing')} style={{ padding: '10px 20px', background: activeTab === 'billing' ? '#28a745' : '#e9ecef', color: activeTab === 'billing' ? 'white' : 'black', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Billing Desk</button>
             </div>
 
             {/* TAB 1: INVENTORY TABLE */}

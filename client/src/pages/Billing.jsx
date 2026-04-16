@@ -1,4 +1,3 @@
-// src/pages/Billing.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api';
@@ -9,15 +8,18 @@ function Billing() {
     
     // Cart State
     const [cartItems, setCartItems] = useState([
-        { product_id: null, name: '', price: 0, quantity: '', total: 0, stock_qty: 0 }
+        { product_id: null, name: '', price: 0, quantity: 1, total: 0, stock_qty: 0 }
     ]);
 
-    // Transaction Math State
     const [subTotal, setSubTotal] = useState(0);
     const [finalAmount, setFinalAmount] = useState('');
     const [discountAmount, setDiscountAmount] = useState(0);
 
-    // Fetch inventory on load so we can autocomplete
+    // ==========================================
+    // NEW: MODAL STATE
+    // ==========================================
+    const [showModal, setShowModal] = useState(false);
+
     useEffect(() => {
         const fetchInventory = async () => {
             try {
@@ -30,21 +32,23 @@ function Billing() {
         fetchInventory();
     }, []);
 
-    // REACITVE MATH ENGINE: Runs automatically whenever the cart changes!
     useEffect(() => {
         const newSubTotal = cartItems.reduce((sum, item) => sum + item.total, 0);
         setSubTotal(newSubTotal);
-        // Safety feature: If cart changes, reset final amount to prevent accidental discounts
         setFinalAmount(newSubTotal); 
         setDiscountAmount(0);
     }, [cartItems]);
 
-    // Handle manual final amount override by your father
     const handleFinalAmountChange = (val) => {
+        const numVal = Number(val);
+        if (numVal < 0) return;
+        if (numVal > subTotal) {
+            setFinalAmount(subTotal);
+            setDiscountAmount(0);
+            return;
+        }
         setFinalAmount(val);
-        const calculatedDiscount = subTotal - Number(val);
-        // Ensure discount doesn't go negative if he accidentally types a huge number
-        setDiscountAmount(calculatedDiscount > 0 ? calculatedDiscount : 0);
+        setDiscountAmount(subTotal - numVal);
     };
 
     // ==========================================
@@ -59,9 +63,11 @@ function Billing() {
         if (existingProduct) {
             updatedCart[index].product_id = existingProduct.id;
             updatedCart[index].price = existingProduct.price;
-            updatedCart[index].stock_qty = existingProduct.stock_qty; // Grab stock to show warning if low
-            // If they already typed a quantity, calculate total instantly
-            updatedCart[index].total = existingProduct.price * (Number(updatedCart[index].quantity) || 0);
+            updatedCart[index].stock_qty = existingProduct.stock_qty;
+            
+            const qty = Number(updatedCart[index].quantity) > 0 ? Number(updatedCart[index].quantity) : 1;
+            updatedCart[index].quantity = qty;
+            updatedCart[index].total = existingProduct.price * qty;
         } else {
             updatedCart[index].product_id = null;
             updatedCart[index].price = 0;
@@ -72,31 +78,30 @@ function Billing() {
     };
 
     const handleQuantityChange = (index, qty) => {
+        if (qty !== '' && Number(qty) < 0) return;
         const updatedCart = [...cartItems];
         updatedCart[index].quantity = qty;
-        // Instantly update the line total
         updatedCart[index].total = updatedCart[index].price * (Number(qty) || 0);
         setCartItems(updatedCart);
     };
 
-    const addCartItem = () => {
-        setCartItems([...cartItems, { product_id: null, name: '', price: 0, quantity: '', total: 0, stock_qty: 0 }]);
-    };
-
-    const removeCartItem = (index) => {
-        setCartItems(cartItems.filter((_, i) => i !== index));
-    };
+    const addCartItem = () => setCartItems([...cartItems, { product_id: null, name: '', price: 0, quantity: 1, total: 0, stock_qty: 0 }]);
+    const removeCartItem = (index) => setCartItems(cartItems.filter((_, i) => i !== index));
 
     // ==========================================
-    // CHECKOUT LOGIC
+    // CHECKOUT LOGIC & MODAL HANDLING
     // ==========================================
-    const handleCheckout = async () => {
-        // Validation Guards
+    const handleCheckoutClick = () => {
+        // 1. Validate the cart FIRST
         const invalidItems = cartItems.filter(item => item.product_id === null);
         if (invalidItems.length > 0) return alert(`Error: Unknown product in cart!`);
         if (cartItems.length === 0 || subTotal === 0) return alert("Cart is empty!");
 
-        // The Payload formatted perfectly for your backend schema
+        // 2. If valid, open the confirmation modal!
+        setShowModal(true);
+    };
+
+    const processTransaction = async (shouldPrint) => {
         const transactionPayload = {
             transaction: {
                 sub_total: subTotal,
@@ -110,18 +115,37 @@ function Billing() {
             }))
         };
 
-        console.log("Sending to Backend:", transactionPayload);
-        alert("Frontend is ready! We need to build the Backend API route next to save this to the DB.");
-        
-        // FUTURE BACKEND CALL:
-        // await API.post('/billing/checkout', transactionPayload);
-        // navigate('/dashboard');
+        try {
+            // ACTUALLY SEND IT TO THE BACKEND!
+            await API.post('/billing/checkout', transactionPayload);
+            
+            // Close the modal
+            setShowModal(false);
+
+            // Trigger Print if requested
+            if (shouldPrint) {
+                window.print();
+            }
+
+            // Clear the POS for the next customer
+            setCartItems([{ product_id: null, name: '', price: 0, quantity: 1, total: 0, stock_qty: 0 }]);
+            setSubTotal(0);
+            setFinalAmount('');
+            setDiscountAmount(0);
+            
+            // Alert success
+            alert("Sale completed and inventory updated!");
+
+        } catch (error) {
+            // If the backend throws the "Not enough stock" error, display it here!
+            setShowModal(false);
+            alert(error.response?.data?.error || "Error processing sale.");
+        }
     };
 
     return (
-        <div style={{ padding: '30px', fontFamily: 'sans-serif', maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ padding: '30px', fontFamily: 'sans-serif', maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
             
-            {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', paddingBottom: '20px', borderBottom: '2px solid #eee' }}>
                 <div>
                     <h1 style={{ color: '#333', margin: 0 }}>Bharat Automobiles POS</h1>
@@ -133,7 +157,6 @@ function Billing() {
             </div>
 
             <div style={{ display: 'flex', gap: '30px', alignItems: 'flex-start' }}>
-                
                 {/* LEFT SIDE: The Cart */}
                 <div style={{ flex: '2', background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
                     <h2 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px', marginTop: 0 }}>Shopping Cart</h2>
@@ -156,34 +179,14 @@ function Billing() {
                             {cartItems.map((item, index) => (
                                 <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
                                     <td style={{ padding: '10px' }}>
-                                        <input 
-                                            type="text" 
-                                            list="billing-suggestions" 
-                                            placeholder="Search Oil..." 
-                                            value={item.name} 
-                                            onChange={(e) => handleNameChange(index, e.target.value)} 
-                                            style={{ width: '100%', padding: '8px' }} 
-                                        />
-                                        {/* Low stock warning directly in the cart! */}
-                                        {item.product_id && item.stock_qty < 5 && (
-                                            <span style={{ color: 'red', fontSize: '0.8em', display: 'block', marginTop: '4px' }}>Only {item.stock_qty} left in stock!</span>
-                                        )}
+                                        <input type="text" list="billing-suggestions" placeholder="Search Oil..." value={item.name} onChange={(e) => handleNameChange(index, e.target.value)} style={{ width: '100%', padding: '8px' }} />
+                                        {item.product_id && item.stock_qty < 5 && <span style={{ color: 'red', fontSize: '0.8em', display: 'block', marginTop: '4px' }}>Only {item.stock_qty} left in stock!</span>}
                                     </td>
                                     <td style={{ padding: '10px', fontWeight: 'bold' }}>₹{item.price}</td>
-                                    <td style={{ padding: '10px' }}>
-                                        <input 
-                                            type="number" 
-                                            placeholder="0" 
-                                            value={item.quantity} 
-                                            onChange={(e) => handleQuantityChange(index, e.target.value)} 
-                                            style={{ width: '60px', padding: '8px' }} 
-                                        />
-                                    </td>
+                                    <td style={{ padding: '10px' }}><input type="number" min="1" placeholder="1" value={item.quantity} onChange={(e) => handleQuantityChange(index, e.target.value)} style={{ width: '60px', padding: '8px' }} /></td>
                                     <td style={{ padding: '10px', fontWeight: 'bold', color: '#0056b3' }}>₹{item.total}</td>
                                     <td style={{ padding: '10px', textAlign: 'center' }}>
-                                        {cartItems.length > 1 && (
-                                            <button onClick={() => removeCartItem(index)} style={{ background: '#dc3545', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer' }}>X</button>
-                                        )}
+                                        {cartItems.length > 1 && <button onClick={() => removeCartItem(index)} style={{ background: '#dc3545', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer' }}>X</button>}
                                     </td>
                                 </tr>
                             ))}
@@ -206,12 +209,7 @@ function Billing() {
 
                     <div style={{ marginBottom: '15px' }}>
                         <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Final Amount Settled (₹)</label>
-                        <input 
-                            type="number" 
-                            value={finalAmount} 
-                            onChange={(e) => handleFinalAmountChange(e.target.value)} 
-                            style={{ width: '100%', padding: '12px', fontSize: '1.2em', border: '2px solid #0056b3', borderRadius: '4px' }} 
-                        />
+                        <input type="number" min="0" max={subTotal} value={finalAmount} onChange={(e) => handleFinalAmountChange(e.target.value)} style={{ width: '100%', padding: '12px', fontSize: '1.2em', border: '2px solid #0056b3', borderRadius: '4px' }} />
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1em', color: '#28a745', marginBottom: '25px' }}>
@@ -219,12 +217,59 @@ function Billing() {
                         <strong>₹{discountAmount}</strong>
                     </div>
 
-                    <button onClick={handleCheckout} style={{ width: '100%', padding: '15px', background: '#0056b3', color: 'white', border: 'none', borderRadius: '5px', fontSize: '1.2em', fontWeight: 'bold', cursor: 'pointer' }}>
+                    {/* Button now opens the modal instead of processing immediately */}
+                    <button onClick={handleCheckoutClick} style={{ width: '100%', padding: '15px', background: '#0056b3', color: 'white', border: 'none', borderRadius: '5px', fontSize: '1.2em', fontWeight: 'bold', cursor: 'pointer' }}>
                         Complete Sale
                     </button>
                 </div>
-
             </div>
+
+            {/* ========================================== */}
+            {/* THE CONFIRMATION MODAL OVERLAY */}
+            {/* ========================================== */}
+            {showModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 1000 // Ensures it sits on top of everything
+                }}>
+                    <div style={{
+                        background: 'white',
+                        padding: '30px',
+                        borderRadius: '10px',
+                        width: '400px',
+                        boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
+                        textAlign: 'center'
+                    }}>
+                        <h2 style={{ marginTop: 0, color: '#333' }}>Confirm Sale</h2>
+                        <p style={{ fontSize: '1.1em', marginBottom: '25px', color: '#555' }}>
+                            You are about to complete a sale for <strong>₹{finalAmount}</strong>. How would you like to proceed?
+                        </p>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {/* Option 1: Confirm & Print */}
+                            <button onClick={() => processTransaction(true)} style={{ padding: '12px', background: '#0056b3', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '1em', fontWeight: 'bold' }}>
+                                🖨️ Confirm & Print Bill
+                            </button>
+                            
+                            {/* Option 2: Confirm Only */}
+                            <button onClick={() => processTransaction(false)} style={{ padding: '12px', background: '#28a745', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '1em', fontWeight: 'bold' }}>
+                                ✅ Confirm Without Printing
+                            </button>
+                            
+                            {/* Option 3: Cancel */}
+                            <button onClick={() => setShowModal(false)} style={{ padding: '12px', background: 'transparent', color: '#dc3545', border: '2px solid #dc3545', borderRadius: '5px', cursor: 'pointer', fontSize: '1em', fontWeight: 'bold', marginTop: '10px' }}>
+                                ❌ Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
         </div>
     );
 }

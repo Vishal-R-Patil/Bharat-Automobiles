@@ -34,7 +34,7 @@ CREATE TABLE Transaction_Items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     transaction_id INT,
     product_id INT,
-    quantity INT NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
     price_at_sale DECIMAL(10,2) NOT NULL,
     FOREIGN KEY (transaction_id) REFERENCES Transactions(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE RESTRICT
