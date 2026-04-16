@@ -418,12 +418,12 @@ function Dashboard() {
                                                     {historyList.map(h => (
                                                         <tr key={h.id}>
                                                             <td className="text-muted">#{h.id}</td>
-                                                            <td className="text-muted">{new Date(h.delivery_date).toLocaleDateString('en-IN')}</td>
+                                                            <td className="text-muted">{new Date(h.delivery_date).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</td>
                                                             <td className="font-bold">{h.supplier_name}</td>
                                                             <td>{h.invoice_number}</td>
                                                             <td>₹{h.total_cost}</td>
                                                             <td className="text-center">
-                                                                <button onClick={() => fetchDeliveryDetails(h)} className="btn btn-success">View Items</button>
+                                                                <button onClick={() => fetchDeliveryDetails(h)} className="btn btn-outline">View Items</button>
                                                             </td>
                                                         </tr>
                                                     ))}

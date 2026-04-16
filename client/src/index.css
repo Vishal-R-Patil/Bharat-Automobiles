@@ -386,6 +386,20 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
 }
 
 
+/* Back to Dashboard button - dark mode fix */
+.dark .dashboard-header .btn-backToDashboard {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  color: #e0e7ff;
+  border: 1px solid #475569;
+}
+
+.dark .dashboard-header .btn-backToDashboard:hover {
+  background: linear-gradient(135deg, var(--primary), #6366f1);
+  color: white;
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+}
+
+
 @media (max-width: 600px) {
   .dashboard-header .header-actions {
     position: static;
