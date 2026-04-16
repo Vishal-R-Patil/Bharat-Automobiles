@@ -87,7 +87,14 @@ function Billing() {
         try {
             await API.post('/billing/checkout', transactionPayload);
             setShowModal(false);
-            if (shouldPrint) window.print(); 
+            if (shouldPrint)
+                {
+                    window.print();
+                    setTimeout(() => {}, 1000);
+                }  
+                    
+            // put some delay for print dialog to open before resetting the form in mobile browsers
+            
             
             setCartItems([{ product_id: null, name: '', price: 0, quantity: 1, total: 0, stock_qty: 0 }]);
             setSubTotal(0); setFinalAmount(''); setDiscountAmount(0);
