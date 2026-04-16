@@ -14,7 +14,8 @@ function Dashboard() {
     const [editForm, setEditForm] = useState({ name: '', brand: '', price: '', stock_qty: '', product_description: '' });
     const [isAddingNew, setIsAddingNew] = useState(false);
     const [newInlineProduct, setNewInlineProduct] = useState({ name: '', brand: '', price: '', stock_qty: '', product_description: '' });
-
+    //universal loading state
+    const [loading, setLoading] = useState(false);
     // ==========================================
     // 2. SORTING STATE & LOGIC
     // ==========================================
@@ -70,35 +71,46 @@ function Dashboard() {
     }, [activeTab]);
 
     const fetchInventory = async () => {
+        setLoading(true);
         try {
             const response = await API.get('/products');
             setProducts(response.data);
         } catch (err) {
             console.error("Error fetching data:", err);
             if (err.response && (err.response.status === 401 || err.response.status === 403)) handleLogout();
+        } finally {
+            setLoading(false);
         }
     };
 
     const fetchHistory = async () => {
+        setLoading(true);
         try { const response = await API.get('/supply/history'); setHistoryList(response.data); } 
         catch (err) { console.error(err); }
+        finally { setLoading(false); }
     };
 
     const fetchDeliveryDetails = async (delivery) => {
+        setLoading(true);
         try { const response = await API.get(`/supply/history/${delivery.id}`); setDetailItems(response.data); setSelectedDelivery(delivery); } 
         catch (err) { console.error(err); }
+        finally { setLoading(false); }
     };
 
     // NEW: Fetch Sales
     const fetchSalesHistory = async () => {
+        setLoading(true);
         try { const response = await API.get('/billing/history'); setSalesList(response.data); } 
         catch (err) { console.error(err); }
+        finally { setLoading(false); }
     };
 
     // NEW: Fetch Sale Items
     const fetchSaleDetails = async (sale) => {
+        setLoading(true);
         try { const response = await API.get(`/billing/history/${sale.id}`); setSaleItems(response.data); setSelectedSale(sale); } 
         catch (err) { console.error(err); }
+        finally { setLoading(false); }
     };
 
     const handleLogout = () => {
@@ -112,12 +124,14 @@ function Dashboard() {
     // ==========================================
     const handleQuickAddSave = async () => {
         try {
+            setLoading(true);
             await API.post('/products', newInlineProduct);
             setIsAddingNew(false);
             setNewInlineProduct({ name: '', brand: '', price: '', stock_qty: '', product_description: '' });
             fetchInventory();
             alert("Success! Product quick-added to inventory.");
         } catch (err) { alert("Failed to quick-add product."); }
+        finally { setLoading(false); }
     };
 
     const handleEditClick = (product) => {
@@ -126,15 +140,19 @@ function Dashboard() {
     };
 
     const handleSaveEdit = async (id) => {
+        setLoading(true);
         if (!window.confirm("Are you sure you want to save these changes?")) return;
         try { await API.put(`/products/${id}`, editForm); setEditingId(null); fetchInventory(); alert("Success! Product updated."); } 
         catch (err) { alert("Failed to update product."); }
+        finally { setLoading(false); }
     };
 
     const handleDeleteClick = async (id) => {
+        setLoading(true);
         if (!window.confirm("⚠️ WARNING: Are you sure you want to delete this product? This action cannot be undone.")) return;
         try { await API.delete(`/products/${id}`); fetchInventory(); } 
         catch (err) { alert("Failed to delete product. It may be linked to previous supply deliveries."); }
+        finally { setLoading(false); }
     };
 
     // ==========================================
@@ -229,6 +247,22 @@ function Dashboard() {
                                 </button>
                             )}
                         </div>
+                        
+                        {/* NEW: Conditional Loading UI */}
+                    {loading ? (
+                        <div style={{ padding: '50px 0', textAlign: 'center', fontSize: '1.2em', color: '#0056b3', fontWeight: 'bold' }}>
+                            ⏳ Fetching live data from cloud...
+                        </div>
+                    ) : (
+                        <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                {/* ... your existing <thead> and <tbody> stay exactly the same here ... */}
+                            </table>
+                        </div>
+                    )}
+              
+
+
                         <div style={{ overflowX: 'auto' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead style={{ backgroundColor: '#0056b3', color: 'white' }}>
