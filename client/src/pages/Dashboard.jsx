@@ -14,8 +14,10 @@ function Dashboard() {
     const [editForm, setEditForm] = useState({ name: '', brand: '', price: '', stock_qty: '', product_description: '' });
     const [isAddingNew, setIsAddingNew] = useState(false);
     const [newInlineProduct, setNewInlineProduct] = useState({ name: '', brand: '', price: '', stock_qty: '', product_description: '' });
-    //universal loading state
+    
+    // Universal loading state
     const [loading, setLoading] = useState(false);
+
     // ==========================================
     // 2. SORTING STATE & LOGIC
     // ==========================================
@@ -54,7 +56,7 @@ function Dashboard() {
     const [detailItems, setDetailItems] = useState([]);
 
     // ==========================================
-    // 5. NEW: SALES HISTORY STATE
+    // 5. SALES HISTORY STATE
     // ==========================================
     const [salesList, setSalesList] = useState([]);
     const [selectedSale, setSelectedSale] = useState(null);
@@ -64,12 +66,12 @@ function Dashboard() {
         fetchInventory();
     }, []);
 
-    // Automatically fetch history when the user clicks the corresponding tabs
     useEffect(() => {
         if (activeTab === 'history') fetchHistory();
         if (activeTab === 'salesHistory') fetchSalesHistory();
     }, [activeTab]);
 
+    // --- API FETCH FUNCTIONS ---
     const fetchInventory = async () => {
         setLoading(true);
         try {
@@ -97,7 +99,6 @@ function Dashboard() {
         finally { setLoading(false); }
     };
 
-    // NEW: Fetch Sales
     const fetchSalesHistory = async () => {
         setLoading(true);
         try { const response = await API.get('/billing/history'); setSalesList(response.data); } 
@@ -105,7 +106,6 @@ function Dashboard() {
         finally { setLoading(false); }
     };
 
-    // NEW: Fetch Sale Items
     const fetchSaleDetails = async (sale) => {
         setLoading(true);
         try { const response = await API.get(`/billing/history/${sale.id}`); setSaleItems(response.data); setSelectedSale(sale); } 
@@ -119,9 +119,7 @@ function Dashboard() {
         navigate('/login');
     };
 
-    // ==========================================
-    // ACTION HANDLERS (Edit, Delete, Add)
-    // ==========================================
+    // --- ACTION HANDLERS ---
     const handleQuickAddSave = async () => {
         try {
             setLoading(true);
@@ -129,7 +127,6 @@ function Dashboard() {
             setIsAddingNew(false);
             setNewInlineProduct({ name: '', brand: '', price: '', stock_qty: '', product_description: '' });
             fetchInventory();
-            alert("Success! Product quick-added to inventory.");
         } catch (err) { alert("Failed to quick-add product."); }
         finally { setLoading(false); }
     };
@@ -142,7 +139,7 @@ function Dashboard() {
     const handleSaveEdit = async (id) => {
         setLoading(true);
         if (!window.confirm("Are you sure you want to save these changes?")) return;
-        try { await API.put(`/products/${id}`, editForm); setEditingId(null); fetchInventory(); alert("Success! Product updated."); } 
+        try { await API.put(`/products/${id}`, editForm); setEditingId(null); fetchInventory(); } 
         catch (err) { alert("Failed to update product."); }
         finally { setLoading(false); }
     };
@@ -151,13 +148,11 @@ function Dashboard() {
         setLoading(true);
         if (!window.confirm("⚠️ WARNING: Are you sure you want to delete this product? This action cannot be undone.")) return;
         try { await API.delete(`/products/${id}`); fetchInventory(); } 
-        catch (err) { alert("Failed to delete product. It may be linked to previous supply deliveries."); }
+        catch (err) { alert("Failed to delete product. It may be linked to previous deliveries/sales."); }
         finally { setLoading(false); }
     };
 
-    // ==========================================
-    // SUPPLY HANDLERS
-    // ==========================================
+    // --- SUPPLY HANDLERS ---
     const handleItemChange = (index, field, value) => {
         const updatedItems = [...supplyItems]; updatedItems[index][field] = value; setSupplyItems(updatedItems);
     };
@@ -183,7 +178,7 @@ function Dashboard() {
     const handleSupplySubmit = async (e) => {
         e.preventDefault();
         const invalidItems = supplyItems.filter(item => item.product_id === null);
-        if (invalidItems.length > 0) return alert(`Error: "${invalidItems[0].name}" is not in your database.\n\nPlease go to the 'View Inventory' tab and use '+ Quick Add Product' first!`);
+        if (invalidItems.length > 0) return alert(`Error: "${invalidItems[0].name}" is not in your database.\nPlease go to the 'View Inventory' tab and use '+ Quick Add Product' first!`);
         
         try {
             await API.post('/supply', { supplyInfo, items: supplyItems });
@@ -195,15 +190,13 @@ function Dashboard() {
         } catch (error) { alert(error.response?.data?.error || "Error saving delivery."); }
     };
 
-    // ==========================================
-    // ICONS (SVGs)
-    // ==========================================
-    const EditIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/></svg> );
-    const TrashIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg> );
+    // --- ICONS ---
+    const EditIcon = () => ( <svg className="icon text-warning" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/></svg> );
+    const TrashIcon = () => ( <svg className="icon text-danger" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg> );
 
     return (
         <div>
-            {/* CSS FOR REPRINTING THERMAL RECEIPTS */}
+            {/* CSS specifically for the Thermal Receipt Printer format */}
             <style>
                 {`
                 @media print {
@@ -220,383 +213,363 @@ function Dashboard() {
                 `}
             </style>
 
-            <div className="no-print" style={{ padding: '30px', fontFamily: 'sans-serif', maxWidth: '1200px', margin: '0 auto' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h1 style={{ color: '#333' }}>Bharat Automobiles - Owner Dashboard</h1>
-                    <button onClick={handleLogout} style={{ padding: '10px 20px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Logout</button>
+            <div className="no-print dashboard-container">
+                <header className="dashboard-header">
+                    <div>
+                        <h1>Bharat Automobiles</h1>
+                        <p className="text-muted">Owner Dashboard & Management</p>
+                    </div>
+                    <button onClick={handleLogout} className="btn btn-danger">Logout</button>
+                </header>
+
+                {/* NAVIGATION TABS */}
+                <div className="tab-container">
+                    <button onClick={() => setActiveTab('inventory')} className={`tab-btn ${activeTab === 'inventory' ? 'active' : ''}`}>📦 View Inventory</button>
+                    <button onClick={() => setActiveTab('addStock')} className={`tab-btn ${activeTab === 'addStock' ? 'active' : ''}`}>🚚 Receive Supply</button>
+                    <button onClick={() => setActiveTab('history')} className={`tab-btn ${activeTab === 'history' ? 'active' : ''}`}>📋 Supply Ledger</button>
+                    <button onClick={() => setActiveTab('salesHistory')} className={`tab-btn ${activeTab === 'salesHistory' ? 'active' : ''}`}>📈 Sales History</button>
+                    <button onClick={() => navigate('/billing')} className="btn btn-success ms-auto">🧾 Billing POS</button>
                 </div>
 
-                {/* TABS */}
-                <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '2px solid #ccc', paddingBottom: '10px' }}>
-                    <button onClick={() => setActiveTab('inventory')} style={{ padding: '10px 20px', background: activeTab === 'inventory' ? '#0056b3' : '#e9ecef', color: activeTab === 'inventory' ? 'white' : 'black', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>View Inventory</button>
-                    <button onClick={() => setActiveTab('addStock')} style={{ padding: '10px 20px', background: activeTab === 'addStock' ? '#0056b3' : '#e9ecef', color: activeTab === 'addStock' ? 'white' : 'black', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Receive Supply</button>
-                    <button onClick={() => setActiveTab('history')} style={{ padding: '10px 20px', background: activeTab === 'history' ? '#0056b3' : '#e9ecef', color: activeTab === 'history' ? 'white' : 'black', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Supply History</button>
-                    <button onClick={() => setActiveTab('salesHistory')} style={{ padding: '10px 20px', background: activeTab === 'salesHistory' ? '#0056b3' : '#e9ecef', color: activeTab === 'salesHistory' ? 'white' : 'black', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Sales History 📈</button>
-                    {/* Notice this now navigates to your dedicated POS page */}
-                    <button onClick={() => navigate('/billing')} style={{ padding: '10px 20px', background: '#28a745', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold', marginLeft: 'auto' }}>Billing Desk 🧾</button>
-                </div>
-
-                {/* TAB 1: INVENTORY TABLE */}
-                {activeTab === 'inventory' && (
-                    <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', padding: '20px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                            <h2 style={{ margin: 0 }}>Current Stock</h2>
-                            {!isAddingNew && (
-                                <button onClick={() => setIsAddingNew(true)} style={{ background: '#0056b3', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
-                                    + Quick Add Product
-                                </button>
-                            )}
-                        </div>
-                        
-                        {/* NEW: Conditional Loading UI */}
-                        {loading ? (
-                        <div style={{ padding: '50px 0', textAlign: 'center', fontSize: '1.2em', color: '#0056b3', fontWeight: 'bold' }}>
-                            ⏳ Fetching live data from cloud...
-                        </div>
-                    ) : (
-                        <div style={{ overflowX: 'auto' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                {/* ... your existing <thead> and <tbody> stay exactly the same here ... */}
-                            </table>
-                        </div>
-                    )}
-              
-
-
-                        <div style={{ overflowX: 'auto' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead style={{ backgroundColor: '#0056b3', color: 'white' }}>
-                                    <tr>
-                                        <th style={{ padding: '15px', textAlign: 'left' }}>S.No</th>
-                                        <th onClick={() => requestSort('name')} style={{ padding: '15px', textAlign: 'left', cursor: 'pointer', userSelect: 'none' }}>Product Name {sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}</th>
-                                        <th style={{ padding: '15px', textAlign: 'left' }}>Brand</th>
-                                        <th style={{ padding: '15px', textAlign: 'left' }}>Description</th>
-                                        <th onClick={() => requestSort('price')} style={{ padding: '15px', textAlign: 'left', cursor: 'pointer', userSelect: 'none' }}>Retail Price {sortConfig.key === 'price' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}</th>
-                                        <th onClick={() => requestSort('stock_qty')} style={{ padding: '15px', textAlign: 'left', cursor: 'pointer', userSelect: 'none' }}>Stock Qty {sortConfig.key === 'stock_qty' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}</th>
-                                        <th style={{ padding: '15px', textAlign: 'center' }}>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {isAddingNew && (
-                                        <tr style={{ backgroundColor: '#fff3cd', borderBottom: '2px solid #ffc107' }}>
-                                            <td style={{ padding: '15px', fontWeight: 'bold' }}>New</td>
-                                            <td style={{ padding: '10px' }}><input type="text" placeholder="Name" value={newInlineProduct.name} onChange={e => setNewInlineProduct({...newInlineProduct, name: e.target.value})} style={{width: '90%', padding: '5px'}}/></td>
-                                            <td style={{ padding: '10px' }}><input type="text" placeholder="Brand" value={newInlineProduct.brand} onChange={e => setNewInlineProduct({...newInlineProduct, brand: e.target.value})} style={{width: '90%', padding: '5px'}}/></td>
-                                            <td style={{ padding: '10px' }}><input type="text" placeholder="Desc" value={newInlineProduct.product_description} onChange={e => setNewInlineProduct({...newInlineProduct, product_description: e.target.value})} style={{width: '90%', padding: '5px'}}/></td>
-                                            <td style={{ padding: '10px' }}><input type="number" placeholder="₹" value={newInlineProduct.price} onChange={e => setNewInlineProduct({...newInlineProduct, price: e.target.value})} style={{width: '80%', padding: '5px'}}/></td>
-                                            <td style={{ padding: '10px' }}><input type="number" placeholder="Qty" value={newInlineProduct.stock_qty} onChange={e => setNewInlineProduct({...newInlineProduct, stock_qty: e.target.value})} style={{width: '80%', padding: '5px'}}/></td>
-                                            <td style={{ padding: '10px', textAlign: 'center' }}>
-                                                <button onClick={handleQuickAddSave} style={{ background: '#28a745', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', marginRight: '5px', fontWeight: 'bold' }}>Save</button>
-                                                <button onClick={() => setIsAddingNew(false)} style={{ background: '#6c757d', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
-                                            </td>
-                                        </tr>
+                {loading ? (
+                    <div className="loader">
+                        ⏳ Fetching live data from cloud...
+                    </div>
+                ) : (
+                    <>
+                        {/* TAB 1: INVENTORY TABLE */}
+                        {activeTab === 'inventory' && (
+                            <div className="card">
+                                <div className="flex-between mb-3">
+                                    <h2 className="m-0">Current Stock</h2>
+                                    {!isAddingNew && (
+                                        <button onClick={() => setIsAddingNew(true)} className="btn btn-primary">
+                                            + Quick Add Product
+                                        </button>
                                     )}
-                                    {sortedProducts.map((product, index) => (
-                                        <tr key={product.id} style={{ borderBottom: '1px solid #eee' }}>
-                                            <td style={{ padding: '15px', fontWeight: 'bold', color: '#555' }}>{index + 1}</td>
-                                            {editingId === product.id ? (
-                                                <>
-                                                    <td style={{ padding: '10px' }}><input type="text" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} style={{width: '90%', padding: '5px'}}/></td>
-                                                    <td style={{ padding: '10px' }}><input type="text" value={editForm.brand} onChange={e => setEditForm({...editForm, brand: e.target.value})} style={{width: '90%', padding: '5px'}}/></td>
-                                                    <td style={{ padding: '10px' }}><input type="text" value={editForm.product_description} onChange={e => setEditForm({...editForm, product_description: e.target.value})} style={{width: '90%', padding: '5px'}}/></td>
-                                                    <td style={{ padding: '10px' }}><input type="number" value={editForm.price} onChange={e => setEditForm({...editForm, price: e.target.value})} style={{width: '80%', padding: '5px'}}/></td>
-                                                    <td style={{ padding: '10px' }}><input type="number" value={editForm.stock_qty} onChange={e => setEditForm({...editForm, stock_qty: e.target.value})} style={{width: '80%', padding: '5px'}}/></td>
-                                                    <td style={{ padding: '10px', textAlign: 'center' }}>
-                                                        <button onClick={() => handleSaveEdit(product.id)} style={{ background: '#28a745', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', marginRight: '5px' }}>Save</button>
-                                                        <button onClick={() => setEditingId(null)} style={{ background: '#6c757d', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
+                                </div>
+                                <div className="table-wrapper">
+                                    <table className="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>S.No</th>
+                                                <th onClick={() => requestSort('name')} className="cursor-pointer">Product Name {sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}</th>
+                                                <th>Brand</th>
+                                                <th>Description</th>
+                                                <th onClick={() => requestSort('price')} className="cursor-pointer">Retail Price {sortConfig.key === 'price' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}</th>
+                                                <th onClick={() => requestSort('stock_qty')} className="cursor-pointer">Stock Qty {sortConfig.key === 'stock_qty' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}</th>
+                                                <th className="text-center">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {isAddingNew && (
+                                                <tr className="bg-highlight">
+                                                    <td className="font-bold"><span className="badge badge-good">New</span></td>
+                                                    <td><input type="text" placeholder="Name" value={newInlineProduct.name} onChange={e => setNewInlineProduct({...newInlineProduct, name: e.target.value})} className="input-field"/></td>
+                                                    <td><input type="text" placeholder="Brand" value={newInlineProduct.brand} onChange={e => setNewInlineProduct({...newInlineProduct, brand: e.target.value})} className="input-field"/></td>
+                                                    <td><input type="text" placeholder="Desc" value={newInlineProduct.product_description} onChange={e => setNewInlineProduct({...newInlineProduct, product_description: e.target.value})} className="input-field"/></td>
+                                                    <td><input type="number" placeholder="₹" value={newInlineProduct.price} onChange={e => setNewInlineProduct({...newInlineProduct, price: e.target.value})} className="input-field"/></td>
+                                                    <td><input type="number" placeholder="Qty" value={newInlineProduct.stock_qty} onChange={e => setNewInlineProduct({...newInlineProduct, stock_qty: e.target.value})} className="input-field"/></td>
+                                                    <td className="text-center flex-gap">
+                                                        <button onClick={handleQuickAddSave} className="btn btn-success">Save</button>
+                                                        <button onClick={() => setIsAddingNew(false)} className="btn btn-outline">Cancel</button>
                                                     </td>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <td style={{ padding: '15px', fontWeight: 'bold' }}>{product.name}</td>
-                                                    <td style={{ padding: '15px' }}>{product.brand || 'N/A'}</td>
-                                                    <td style={{ padding: '15px', color: '#666', fontSize: '0.9em' }}>{product.product_description || 'No description'}</td>
-                                                    <td style={{ padding: '15px' }}>₹{product.price}</td>
-                                                    <td style={{ padding: '15px', fontWeight: 'bold', color: product.stock_qty < 5 ? 'red' : 'green' }}>{product.stock_qty}</td>
-                                                    <td style={{ padding: '15px', textAlign: 'center' }}>
-                                                        <button onClick={() => handleEditClick(product)} title="Edit Product" style={{ background: 'transparent', border: 'none', cursor: 'pointer', marginRight: '10px', color: '#ffc107' }}><EditIcon /></button>
-                                                        <button onClick={() => handleDeleteClick(product.id)} title="Delete Product" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#dc3545' }}><TrashIcon /></button>
-                                                    </td>
-                                                </>
+                                                </tr>
                                             )}
-                                        </tr>
+                                            {sortedProducts.map((product, index) => (
+                                                <tr key={product.id}>
+                                                    <td className="font-bold text-muted">{index + 1}</td>
+                                                    {editingId === product.id ? (
+                                                        <>
+                                                            <td><input type="text" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} className="input-field"/></td>
+                                                            <td><input type="text" value={editForm.brand} onChange={e => setEditForm({...editForm, brand: e.target.value})} className="input-field"/></td>
+                                                            <td><input type="text" value={editForm.product_description} onChange={e => setEditForm({...editForm, product_description: e.target.value})} className="input-field"/></td>
+                                                            <td><input type="number" value={editForm.price} onChange={e => setEditForm({...editForm, price: e.target.value})} className="input-field"/></td>
+                                                            <td><input type="number" value={editForm.stock_qty} onChange={e => setEditForm({...editForm, stock_qty: e.target.value})} className="input-field"/></td>
+                                                            <td className="text-center flex-gap">
+                                                                <button onClick={() => handleSaveEdit(product.id)} className="btn btn-success">Save</button>
+                                                                <button onClick={() => setEditingId(null)} className="btn btn-outline">Cancel</button>
+                                                            </td>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <td className="font-bold">{product.name}</td>
+                                                            <td>{product.brand || 'N/A'}</td>
+                                                            <td className="text-muted text-sm">{product.product_description || 'No description'}</td>
+                                                            <td>₹{product.price}</td>
+                                                            <td className="font-bold">
+                                                                <span className={`badge ${product.stock_qty < 5 ? 'badge-low' : 'badge-good'}`}>{product.stock_qty}</span>
+                                                            </td>
+                                                            <td className="text-center">
+                                                                <button onClick={() => handleEditClick(product)} title="Edit Product" className="btn-icon"><EditIcon /></button>
+                                                                <button onClick={() => handleDeleteClick(product.id)} title="Delete Product" className="btn-icon"><TrashIcon /></button>
+                                                            </td>
+                                                        </>
+                                                    )}
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* TAB 2: ADVANCED SUPPLY FORM */}
+                        {activeTab === 'addStock' && (
+                            <div className="card">
+                                <h2 className="border-bottom pb-2">Receive New Delivery</h2>
+                                <form onSubmit={handleSupplySubmit}>
+                                    <div className="form-grid highlight-box mb-4">
+                                        <div><label>Supplier</label><input type="text" required value={supplyInfo.supplierName} onChange={(e) => setSupplyInfo({...supplyInfo, supplierName: e.target.value})} className="input-field" /></div>
+                                        <div><label>Invoice #</label><input type="text" required value={supplyInfo.invoiceNumber} onChange={(e) => setSupplyInfo({...supplyInfo, invoiceNumber: e.target.value})} className="input-field" /></div>
+                                        <div><label>Total Cost (₹)</label><input type="number" required value={supplyInfo.totalCost} onChange={(e) => setSupplyInfo({...supplyInfo, totalCost: e.target.value})} className="input-field" /></div>
+                                    </div>
+                                    
+                                    <h3 className="mb-3">Products in this Delivery</h3>
+                                    <datalist id="product-suggestions">{products.map(p => <option key={p.id} value={p.name} />)}</datalist>
+                                    
+                                    {supplyItems.map((item, index) => (
+                                        <div key={index} className="form-row mb-3">
+                                            <input type="text" list="product-suggestions" placeholder="Type Product Name" required value={item.name} onChange={(e) => handleNameChange(index, e.target.value)} className="input-field" />
+                                            <input type="number" placeholder="Wholesale (₹)" required value={item.wholesale_price} onChange={(e) => handleItemChange(index, 'wholesale_price', e.target.value)} className="input-field" />
+                                            <input type="number" placeholder="Qty Arrived" required value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', e.target.value)} className="input-field" />
+                                            {supplyItems.length > 1 && <button type="button" onClick={() => removeLineItem(index)} className="btn btn-danger"><TrashIcon /></button>}
+                                        </div>
                                     ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
-
-                {/* TAB 2: ADVANCED SUPPLY FORM */}
-                {activeTab === 'addStock' && (
-                    <div style={{ padding: '20px', background: 'white', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
-                        <h2 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px' }}>Receive New Delivery</h2>
-                        <form onSubmit={handleSupplySubmit}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginBottom: '30px', background: '#f8f9fa', padding: '15px', borderRadius: '5px' }}>
-                                <div><label>Supplier</label><input type="text" required value={supplyInfo.supplierName} onChange={(e) => setSupplyInfo({...supplyInfo, supplierName: e.target.value})} style={{ width: '100%', padding: '8px', marginTop: '5px' }} /></div>
-                                <div><label>Invoice #</label><input type="text" required value={supplyInfo.invoiceNumber} onChange={(e) => setSupplyInfo({...supplyInfo, invoiceNumber: e.target.value})} style={{ width: '100%', padding: '8px', marginTop: '5px' }} /></div>
-                                <div><label>Total Cost (₹)</label><input type="number" required value={supplyInfo.totalCost} onChange={(e) => setSupplyInfo({...supplyInfo, totalCost: e.target.value})} style={{ width: '100%', padding: '8px', marginTop: '5px' }} /></div>
-                            </div>
-                                  {/* NEW: Conditional Loading UI */}
-                        {loading ? (
-                        <div style={{ padding: '50px 0', textAlign: 'center', fontSize: '1.2em', color: '#0056b3', fontWeight: 'bold' }}>
-                            ⏳ Fetching live data from cloud...
-                        </div>
-                    ) : (
-                        <div style={{ overflowX: 'auto' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                {/* ... your existing <thead> and <tbody> stay exactly the same here ... */}
-                            </table>
-                        </div>
-                    )}
-
-                            <h3 style={{ marginBottom: '15px' }}>Products in this Delivery</h3>
-                            <datalist id="product-suggestions">{products.map(p => <option key={p.id} value={p.name} />)}</datalist>
-                            {supplyItems.map((item, index) => (
-                                <div key={index} style={{ display: 'grid', gridTemplateColumns: '3fr 2fr 2fr auto', gap: '10px', marginBottom: '15px', alignItems: 'center' }}>
-                                    <input type="text" list="product-suggestions" placeholder="Type Product Name" required value={item.name} onChange={(e) => handleNameChange(index, e.target.value)} style={{ padding: '10px' }} />
-                                    <input type="number" placeholder="Wholesale (₹)" required value={item.wholesale_price} onChange={(e) => handleItemChange(index, 'wholesale_price', e.target.value)} style={{ padding: '10px' }} />
-                                    <input type="number" placeholder="Qty Arrived" required value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', e.target.value)} style={{ padding: '10px' }} />
-                                    {supplyItems.length > 1 && <button type="button" onClick={() => removeLineItem(index)} style={{ background: '#dc3545', color: 'white', border: 'none', padding: '10px 15px', borderRadius: '4px', cursor: 'pointer' }}><TrashIcon /></button>}
-                                </div>
-                            ))}
-                            <button type="button" onClick={addLineItem} style={{ background: '#28a745', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '4px', cursor: 'pointer', marginBottom: '30px' }}>+ Add Another Product</button>
-                            <hr style={{ border: '1px solid #eee', marginBottom: '20px' }}/>
-                            <button type="submit" style={{ width: '100%', padding: '15px', background: '#0056b3', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold' }}>Process Delivery</button>
-                        </form>
-                    </div>
-                )}
-
-                {/* TAB 3: SUPPLY HISTORY */}
-                {activeTab === 'history' && (
-                    <div style={{ background:'white', padding:'20px', borderRadius:'8px', boxShadow:'0 4px 8px rgba(0,0,0,0.1)' }}>
-
-                              {/* NEW: Conditional Loading UI */}
-                    {loading ? (
-                        <div style={{ padding: '50px 0', textAlign: 'center', fontSize: '1.2em', color: '#0056b3', fontWeight: 'bold' }}>
-                            ⏳ Fetching live data from cloud...
-                        </div>
-                    ) : (
-                        <div style={{ overflowX: 'auto' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                {/* ... your existing <thead> and <tbody> stay exactly the same here ... */}
-                            </table>
-                        </div>
-                    )}
-                        {selectedDelivery ? (
-                            <div>
-                                <button onClick={() => setSelectedDelivery(null)} style={{ marginBottom: '15px', padding: '8px 15px', cursor: 'pointer', background: '#e9ecef', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}>← Back to History List</button>
-                                <h3 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px' }}>Items for Invoice: {selectedDelivery.invoice_number}</h3>
-                                <p><strong>Supplier:</strong> {selectedDelivery.supplier_name} | <strong> Date:</strong> {new Date(selectedDelivery.delivery_date).toLocaleDateString('en-IN')} | <strong> Total Cost:</strong> ₹{selectedDelivery.total_cost}</p>
-                                <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '15px' }}>
-                                    <thead style={{ backgroundColor: '#0056b3', color: 'white' }}>
-                                        <tr>
-                                            <th style={{ padding: '12px', textAlign: 'left' }}>Product Name</th>
-                                            <th style={{ padding: '12px', textAlign: 'left' }}>Brand</th>
-                                            <th style={{ padding: '12px', textAlign: 'left' }}>Wholesale Price</th>
-                                            <th style={{ padding: '12px', textAlign: 'left' }}>Retail Price</th>
-                                            <th style={{ padding: '12px', textAlign: 'left' }}>Quantity Added</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {detailItems.map((item, idx) => (
-                                            <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
-                                                <td style={{ padding: '12px', fontWeight: 'bold' }}>{item.Product_name || item.product_name}</td>
-                                                <td style={{ padding: '12px' }}>{item.brand}</td>
-                                                <td style={{ padding: '12px' }}>₹{item.Wholesale_price || item.wholesale_price}</td>
-                                                <td style={{ padding: '12px' }}>₹{item.Retail_price || item.retail_price}</td>
-                                                <td style={{ padding: '12px', fontWeight: 'bold', color: '#28a745' }}>+{item.Quantity_added || item.quantity_added}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            
-
-                        )
-                        : (
-                            
-                            <div>
-                                <h2 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px' }}>Recent Deliveries</h2>
-                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                    <thead style={{ backgroundColor: '#0056b3', color: 'white' }}>
-                                        <tr>
-                                            <th style={{ padding: '12px', textAlign: 'left' }}>Delivery ID</th>
-                                            <th style={{ padding: '12px', textAlign: 'left' }}>Date</th>
-                                            <th style={{ padding: '12px', textAlign: 'left' }}>Supplier Name</th>
-                                            <th style={{ padding: '12px', textAlign: 'left' }}>Invoice #</th>
-                                            <th style={{ padding: '12px', textAlign: 'left' }}>Total Cost</th>
-                                            <th style={{ padding: '12px', textAlign: 'center' }}>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {historyList.map(h => (
-                                            <tr key={h.id} style={{ borderBottom: '1px solid #eee' }}>
-                                                <td style={{ padding: '12px' }}>#{h.id}</td>
-                                                <td style={{ padding: '12px', color: '#555' }}>{new Date(h.delivery_date).toLocaleDateString('en-IN')}</td>
-                                                <td style={{ padding: '12px', fontWeight: 'bold' }}>{h.supplier_name}</td>
-                                                <td style={{ padding: '12px' }}>{h.invoice_number}</td>
-                                                <td style={{ padding: '12px' }}>₹{h.total_cost}</td>
-                                                <td style={{ padding: '12px', textAlign: 'center' }}>
-                                                    <button onClick={() => fetchDeliveryDetails(h)} style={{ padding: '8px 12px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>View Items</button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {historyList.length === 0 && <tr><td colSpan="6" style={{ padding: '20px', textAlign: 'center', color: '#666' }}>No delivery history found.</td></tr>}
-                                    </tbody>
-                                </table>
+                                    
+                                    <div className="flex-between mt-4 border-top pt-3">
+                                        <button type="button" onClick={addLineItem} className="btn btn-outline">+ Add Another Product</button>
+                                        <button type="submit" className="btn btn-primary">Process Delivery</button>
+                                    </div>
+                                </form>
                             </div>
                         )}
-                    </div>
-                )}
 
-                {/* TAB 4: NEW SALES HISTORY 📈 */}
-                {activeTab === 'salesHistory' && (
-                    <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
-                              {/* NEW: Conditional Loading UI */}
-                    {loading ? (
-                        <div style={{ padding: '50px 0', textAlign: 'center', fontSize: '1.2em', color: '#0056b3', fontWeight: 'bold' }}>
-                            ⏳ Fetching live data from cloud...
-                        </div>
-                    ) : (
-                        <div style={{ overflowX: 'auto' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                {/* ... your existing <thead> and <tbody> stay exactly the same here ... */}
-                            </table>
-                        </div>
-                    )}
-                        {selectedSale ? (
-                            <div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                                    <button onClick={() => setSelectedSale(null)} style={{ padding: '8px 15px', cursor: 'pointer', background: '#e9ecef', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}>← Back to Sales List</button>
-                                    {/* TRIGGER PRINT COMMAND */}
-                                    <button onClick={() => window.print()} style={{ padding: '8px 15px', background: '#0056b3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>🖨️ Reprint Bill</button>
-                                </div>
-
-                                <h3 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
-                                    Sale Details | Date: {new Date(selectedSale.sale_date).toLocaleDateString('en-IN')}
-                                </h3>
-                                
-                                <div style={{ display: 'flex', gap: '20px', marginBottom: '15px', fontSize: '1.1em' }}>
-                                    <span><strong>Subtotal:</strong> ₹{selectedSale.sub_total}</span>
-                                    <span style={{ color: '#dc3545' }}><strong>Discount:</strong> -₹{selectedSale.discount_amount}</span>
-                                    <span style={{ color: '#28a745' }}><strong>Final Paid:</strong> ₹{selectedSale.final_amount}</span>
-                                </div>
-                                
-                                <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '15px' }}>
-                                    <thead style={{ backgroundColor: '#f8f9fa', borderBottom: '2px solid #ccc' }}>
-                                        <tr>
-                                            <th style={{ padding: '12px', textAlign: 'left' }}>Product Name</th>
-                                            <th style={{ padding: '12px', textAlign: 'left' }}>Qty Sold</th>
-                                            <th style={{ padding: '12px', textAlign: 'left' }}>Price at Sale</th>
-                                            <th style={{ padding: '12px', textAlign: 'left' }}>Line Total</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {saleItems.map((item, idx) => (
-                                            <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
-                                                <td style={{ padding: '12px', fontWeight: 'bold' }}>{item.product_name}</td>
-                                                <td style={{ padding: '12px' }}>{item.quantity}</td>
-                                                <td style={{ padding: '12px' }}>₹{item.price_at_sale}</td>
-                                                <td style={{ padding: '12px', color: '#0056b3', fontWeight: 'bold' }}>₹{item.quantity * item.price_at_sale}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        ) : (
-                            <div>
-                                <h2 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px' }}>Past Transactions</h2>
-                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                    <thead style={{ backgroundColor: '#0056b3', color: 'white' }}>
-                                        <tr>
-                                            {/* ID explicitly removed from here per your request */}
-                                            <th style={{ padding: '12px', textAlign: 'left' }}>Date & Time</th>
-                                            <th style={{ padding: '12px', textAlign: 'left' }}>Subtotal</th>
-                                            <th style={{ padding: '12px', textAlign: 'left' }}>Discount</th>
-                                            <th style={{ padding: '12px', textAlign: 'left' }}>Final Amount</th>
-                                            <th style={{ padding: '12px', textAlign: 'center' }}>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {salesList.map(sale => (
-                                            <tr key={sale.id} style={{ borderBottom: '1px solid #eee' }}>
-                                                <td style={{ padding: '12px', color: '#555' }}>
-                                                    {new Date(sale.sale_date).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
-                                                </td>
-                                                <td style={{ padding: '12px' }}>₹{sale.sub_total}</td>
-                                                <td style={{ padding: '12px', color: '#dc3545' }}>₹{sale.discount_amount}</td>
-                                                <td style={{ padding: '12px', fontWeight: 'bold', color: '#28a745' }}>₹{sale.final_amount}</td>
-                                                <td style={{ padding: '12px', textAlign: 'center' }}>
-                                                    <button onClick={() => fetchSaleDetails(sale)} style={{ padding: '8px 12px', background: '#17a2b8', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>View Bill</button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {salesList.length === 0 && <tr><td colSpan="5" style={{ padding: '20px', textAlign: 'center' }}>No sales recorded yet.</td></tr>}
-                                    </tbody>
-                                </table>
+                        {/* TAB 3: SUPPLY HISTORY */}
+                        {activeTab === 'history' && (
+                            <div className="card">
+                                {selectedDelivery ? (
+                                    <div>
+                                        <button onClick={() => setSelectedDelivery(null)} className="btn btn-outline mb-3">← Back to History List</button>
+                                        <h3 className="border-bottom pb-2">Items for Invoice: {selectedDelivery.invoice_number}</h3>
+                                        <p><strong>Supplier:</strong> {selectedDelivery.supplier_name} | <strong> Date:</strong> {new Date(selectedDelivery.delivery_date).toLocaleDateString('en-IN')} | <strong> Total Cost:</strong> ₹{selectedDelivery.total_cost}</p>
+                                        
+                                        <div className="table-wrapper mt-3">
+                                            <table className="data-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Product Name</th>
+                                                        <th>Brand</th>
+                                                        <th>Wholesale Price</th>
+                                                        <th>Retail Price</th>
+                                                        <th>Quantity Added</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {detailItems.map((item, idx) => (
+                                                        <tr key={idx}>
+                                                            <td className="font-bold">{item.Product_name || item.product_name}</td>
+                                                            <td>{item.brand}</td>
+                                                            <td>₹{item.Wholesale_price || item.wholesale_price}</td>
+                                                            <td>₹{item.Retail_price || item.retail_price}</td>
+                                                            <td className="font-bold text-success">+{item.Quantity_added || item.quantity_added}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <h2 className="border-bottom pb-2">Recent Deliveries</h2>
+                                        <div className="table-wrapper">
+                                            <table className="data-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Delivery ID</th>
+                                                        <th>Date</th>
+                                                        <th>Supplier Name</th>
+                                                        <th>Invoice #</th>
+                                                        <th>Total Cost</th>
+                                                        <th className="text-center">Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {historyList.map(h => (
+                                                        <tr key={h.id}>
+                                                            <td className="text-muted">#{h.id}</td>
+                                                            <td className="text-muted">{new Date(h.delivery_date).toLocaleDateString('en-IN')}</td>
+                                                            <td className="font-bold">{h.supplier_name}</td>
+                                                            <td>{h.invoice_number}</td>
+                                                            <td>₹{h.total_cost}</td>
+                                                            <td className="text-center">
+                                                                <button onClick={() => fetchDeliveryDetails(h)} className="btn btn-success">View Items</button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                    {historyList.length === 0 && <tr><td colSpan="6" className="text-center text-muted p-4">No delivery history found.</td></tr>}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
-                    </div>
+
+                        {/* TAB 4: SALES HISTORY 📈 */}
+                        {activeTab === 'salesHistory' && (
+                            <div className="card">
+                                {selectedSale ? (
+                                    <div>
+                                        <div className="flex-between mb-3">
+                                            <button onClick={() => setSelectedSale(null)} className="btn btn-outline">← Back to Sales List</button>
+                                            <button onClick={() => window.print()} className="btn btn-primary">🖨️ Reprint Bill</button>
+                                        </div>
+
+                                        <h3 className="border-bottom pb-2">Sale Details | Date: {new Date(selectedSale.sale_date).toLocaleDateString('en-IN')}</h3>
+                                        
+                                        <div className="highlight-box flex-gap mb-3">
+                                            <span><strong>Subtotal:</strong> ₹{selectedSale.sub_total}</span>
+                                            <span className="text-danger"><strong>Discount:</strong> -₹{selectedSale.discount_amount}</span>
+                                            <span className="text-success"><strong>Final Paid:</strong> ₹{selectedSale.final_amount}</span>
+                                        </div>
+                                        
+                                        <div className="table-wrapper mt-3">
+                                            <table className="data-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Product Name</th>
+                                                        <th>Qty Sold</th>
+                                                        <th>Price at Sale</th>
+                                                        <th>Line Total</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {saleItems.map((item, idx) => (
+                                                        <tr key={idx}>
+                                                            <td className="font-bold">{item.product_name}</td>
+                                                            <td>{item.quantity}</td>
+                                                            <td>₹{item.price_at_sale}</td>
+                                                            <td className="font-bold text-primary">₹{item.quantity * item.price_at_sale}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <h2 className="border-bottom pb-2">Past Transactions</h2>
+                                        <div className="table-wrapper">
+                                            <table className="data-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date & Time</th>
+                                                        <th>Subtotal</th>
+                                                        <th>Discount</th>
+                                                        <th>Final Amount</th>
+                                                        <th className="text-center">Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {salesList.map(sale => (
+                                                        <tr key={sale.id}>
+                                                            <td className="text-muted">{new Date(sale.sale_date).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</td>
+                                                            <td>₹{sale.sub_total}</td>
+                                                            <td className="text-danger">₹{sale.discount_amount}</td>
+                                                            <td className="font-bold text-success">₹{sale.final_amount}</td>
+                                                            <td className="text-center">
+                                                                <button onClick={() => fetchSaleDetails(sale)} className="btn btn-outline">View Bill</button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                    {salesList.length === 0 && <tr><td colSpan="5" className="text-center text-muted p-4">No sales recorded yet.</td></tr>}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
 
             {/* ========================================== */}
             {/* HIDDEN PRINT RECEIPT (Triggers when reprinting a bill) */}
             {/* ========================================== */}
-            {selectedSale && (
-                <div className="print-container">
-                    <div style={{ textAlign: 'center', borderBottom: '1px dashed #000', paddingBottom: '10px', marginBottom: '10px' }}>
-                        <h2 style={{ margin: '0 0 5px 0', fontSize: '18px' }}>BHARAT AUTOMOBILES</h2>
-                        <p style={{ margin: '0 0 3px 0', fontSize: '11px' }}>Siddappa Circle, P.B. Road</p>
-                        <p style={{ margin: '0 0 3px 0', fontSize: '11px' }}>Haveri - 581110</p>
-                        <p style={{ margin: '0', fontSize: '11px' }}>Ph: +91 99999 99999</p> 
-                        <p style={{ margin: '5px 0 0 0', fontSize: '10px', fontWeight: 'bold' }}>*** DUPLICATE RECEIPT ***</p>
-                    </div>
+            {/* HIDDEN PRINT RECEIPT (Triggers when reprinting a bill) */}
+{/* ========================================== */}
+{/* HIDDEN PRINT RECEIPT (Triggers when reprinting a bill) */}
+{/* ========================================== */}
+{selectedSale && (
+    <div className="print-container">
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '11px' }}>
-                        <span>{new Date(selectedSale.sale_date).toLocaleDateString('en-IN')}</span>
-                        <span>{new Date(selectedSale.sale_date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
-                    </div>
+        <div style={{ textAlign: 'center', borderBottom: '1px dashed #000', paddingBottom: '10px', marginBottom: '10px' }}>
+            <h2 style={{ margin: '0 0 5px 0', fontSize: '18px' }}>BHARAT AUTOMOBILES</h2>
+            <p style={{ margin: '0 0 3px 0', fontSize: '11px' }}>Hosamani Siddappa Circle, P.B. Road</p>
+            <p style={{ margin: '0 0 3px 0', fontSize: '11px' }}>Haveri - 581110</p>
+            <p style={{ margin: '0', fontSize: '11px' }}>Ph: 99807 56208 | 98449 29729 | 96860 55206</p> 
+            <p style={{ margin: '2px 0 0 0', fontSize: '11px' }}>website: www.bharat-automobiles.onrender.com</p>
+            <p style={{ marginTop: '5px', fontSize: '11px', fontWeight: 'bold' }}>*** DUPLICATE RECEIPT ***</p>
+        </div>
 
-                    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '10px', fontSize: '11px' }}>
-                        <thead style={{ borderBottom: '1px solid #000', borderTop: '1px solid #000' }}>
-                            <tr>
-                                <th style={{ textAlign: 'left', padding: '4px 0' }}>Item</th>
-                                <th style={{ textAlign: 'center', padding: '4px 0' }}>Qty</th>
-                                <th style={{ textAlign: 'right', padding: '4px 0' }}>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {saleItems.map((item, idx) => (
-                                <tr key={idx}>
-                                    <td style={{ padding: '4px 0', wordBreak: 'break-word', paddingRight: '5px' }}>{item.product_name}</td>
-                                    <td style={{ textAlign: 'center', padding: '4px 0' }}>{item.quantity}</td>
-                                    <td style={{ textAlign: 'right', padding: '4px 0' }}>{item.quantity * item.price_at_sale}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '11px' }}>
+            <span>Date:{new Date(selectedSale.sale_date).toLocaleDateString('en-IN')}</span>
+            <span>Time:{new Date(selectedSale.sale_date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
 
-                    <div style={{ borderTop: '1px solid #000', paddingTop: '5px', fontSize: '12px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0' }}>
-                            <span>Subtotal:</span>
-                            <span>{selectedSale.sub_total}</span>
-                        </div>
-                        {selectedSale.discount_amount > 0 && (
-                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0' }}>
-                                <span>Discount:</span>
-                                <span>-{selectedSale.discount_amount}</span>
-                            </div>
-                        )}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px', marginTop: '5px', borderTop: '1px dashed #000', paddingTop: '5px' }}>
-                            <span>TOTAL:</span>
-                            <span>Rs {selectedSale.final_amount}</span>
-                        </div>
-                    </div>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '10px', fontSize: '11px' }}>
+            <thead>
+                <tr>
+                    <th style={{ borderBottom: '1px solid #000', textAlign: 'left', padding: '4px 0' }}>Item</th>
+                    <th style={{ borderBottom: '1px solid #000', textAlign: 'center', padding: '4px 0' }}>Qty</th>
+                    <th style={{ borderBottom: '1px solid #000', textAlign: 'right', padding: '4px 0' }}>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {saleItems.map((item, idx) => (
+                    <tr key={idx}>
+                        <td style={{ padding: '4px 0', wordBreak: 'break-word', paddingRight: '5px' }}>
+                            {item.product_name}
+                        </td>
+                        <td style={{ textAlign: 'center', padding: '4px 0' }}>
+                            {item.quantity}
+                        </td>
+                        <td style={{ textAlign: 'right', padding: '4px 0' }}>
+                            {item.quantity * item.price_at_sale}
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+
+        <div style={{ borderTop: '1px solid #000', paddingTop: '5px', fontSize: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0' }}>
+                <span>Subtotal:</span>
+                <span>{selectedSale.sub_total}</span>
+            </div>
+
+            {selectedSale.discount_amount > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0' }}>
+                    <span>Discount:</span>
+                    <span>-{selectedSale.discount_amount}</span>
                 </div>
             )}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px', marginTop: '5px', borderTop: '1px dashed #000', paddingTop: '5px' }}>
+                <span>TOTAL:</span>
+                <span>Rs {selectedSale.final_amount}</span>
+            </div>
+        </div>
+
+        <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '10px' }}>
+            <p style={{ margin: '3px 0' }}>Thank you for visiting! Please visit us again.</p>
+            <p style={{ margin: '3px 0' }}>Check our website for available products.</p>
+        </div>
+
+    </div>
+)}
         </div>
     );
 }
