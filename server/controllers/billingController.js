@@ -80,4 +80,41 @@ const processCheckout = async (req, res) => {
     }
 };
 
-module.exports = { processCheckout };
+// 1. Get the list of all sales (Master Record)
+const getSalesHistory = async (req, res) => {
+    try {
+        // Fetch ordered by newest first
+        const [rows] = await db.query('SELECT * FROM transactions ORDER BY id DESC');
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to fetch sales history" });
+    }
+};
+
+// 2. Get the specific items for ONE sale (Detail Record)
+const getTransactionItems = async (req, res) => {
+    try {
+        const transactionId = req.params.id;
+        
+        // JOIN transaction_items with Products to get the real name
+        const sql = `
+            SELECT 
+                p.name AS product_name,
+                ti.quantity,
+                ti.price_at_sale,
+                (ti.quantity * ti.price_at_sale) AS total_price
+            FROM transaction_items ti
+            JOIN Products p ON ti.product_id = p.id
+            WHERE ti.transaction_id = ?
+        `;
+        
+        const [rows] = await db.query(sql, [transactionId]);
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to fetch transaction items" });
+    }
+};
+
+module.exports = { processCheckout, getSalesHistory, getTransactionItems };
