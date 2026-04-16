@@ -7,11 +7,13 @@ function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault(); // Prevents the page from refreshing
+        setIsLoading(true);
         setError(''); // Clear old errors
         
         try {
@@ -28,6 +30,7 @@ function Login() {
         } catch (err) {
             console.error(err);
             setError('Invalid username or password!');
+            setIsLoading(false);
         }
     };
 
@@ -59,8 +62,22 @@ function Login() {
                 
                 {error && <p style={{ color: 'red' }}>{error}</p>}
                 
-                <button type="submit" style={{ width: '100%', padding: '10px', background: '#0056b3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                    Login
+               {/* 4. The Upgraded Button */}
+                <button 
+                    type="submit" 
+                    disabled={isLoading} 
+                    style={{ 
+                        padding: '12px', 
+                        background: isLoading ? '#6c757d' : '#0056b3', // Turns grey while loading
+                        color: 'white', 
+                        border: 'none', 
+                        borderRadius: '5px', 
+                        cursor: isLoading ? 'not-allowed' : 'pointer', 
+                        fontSize: '16px', 
+                        fontWeight: 'bold' 
+                    }}
+                >
+                    {isLoading ? '⏳ Verifying...' : 'Login'}
                 </button>
             </form>
         </div>
