@@ -90,10 +90,9 @@ function Billing() {
             if (shouldPrint)
                 {
                     window.print();
-                    setTimeout(() => {}, 1000);
+                    setTimeout(() => {}, 1000);   // put some delay for print dialog to open before resetting the form in mobile browsers
                 }  
                     
-            // put some delay for print dialog to open before resetting the form in mobile browsers
             
             
             setCartItems([{ product_id: null, name: '', price: 0, quantity: 1, total: 0, stock_qty: 0 }]);
