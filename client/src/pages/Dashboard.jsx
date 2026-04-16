@@ -233,7 +233,7 @@ function Dashboard() {
                     <button onClick={() => setActiveTab('history')} style={{ padding: '10px 20px', background: activeTab === 'history' ? '#0056b3' : '#e9ecef', color: activeTab === 'history' ? 'white' : 'black', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Supply History</button>
                     <button onClick={() => setActiveTab('salesHistory')} style={{ padding: '10px 20px', background: activeTab === 'salesHistory' ? '#0056b3' : '#e9ecef', color: activeTab === 'salesHistory' ? 'white' : 'black', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Sales History 📈</button>
                     {/* Notice this now navigates to your dedicated POS page */}
-                    <button onClick={() => navigate('/billing')} style={{ padding: '10px 20px', background: '#28a745', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold', marginLeft: 'auto' }}>Billing Desk 💰</button>
+                    <button onClick={() => navigate('/billing')} style={{ padding: '10px 20px', background: '#28a745', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold', marginLeft: 'auto' }}>Billing Desk 🧾</button>
                 </div>
 
                 {/* TAB 1: INVENTORY TABLE */}
@@ -249,7 +249,7 @@ function Dashboard() {
                         </div>
                         
                         {/* NEW: Conditional Loading UI */}
-                    {loading ? (
+                        {loading ? (
                         <div style={{ padding: '50px 0', textAlign: 'center', fontSize: '1.2em', color: '#0056b3', fontWeight: 'bold' }}>
                             ⏳ Fetching live data from cloud...
                         </div>
@@ -337,6 +337,19 @@ function Dashboard() {
                                 <div><label>Invoice #</label><input type="text" required value={supplyInfo.invoiceNumber} onChange={(e) => setSupplyInfo({...supplyInfo, invoiceNumber: e.target.value})} style={{ width: '100%', padding: '8px', marginTop: '5px' }} /></div>
                                 <div><label>Total Cost (₹)</label><input type="number" required value={supplyInfo.totalCost} onChange={(e) => setSupplyInfo({...supplyInfo, totalCost: e.target.value})} style={{ width: '100%', padding: '8px', marginTop: '5px' }} /></div>
                             </div>
+                                  {/* NEW: Conditional Loading UI */}
+                        {loading ? (
+                        <div style={{ padding: '50px 0', textAlign: 'center', fontSize: '1.2em', color: '#0056b3', fontWeight: 'bold' }}>
+                            ⏳ Fetching live data from cloud...
+                        </div>
+                    ) : (
+                        <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                {/* ... your existing <thead> and <tbody> stay exactly the same here ... */}
+                            </table>
+                        </div>
+                    )}
+
                             <h3 style={{ marginBottom: '15px' }}>Products in this Delivery</h3>
                             <datalist id="product-suggestions">{products.map(p => <option key={p.id} value={p.name} />)}</datalist>
                             {supplyItems.map((item, index) => (
@@ -357,6 +370,19 @@ function Dashboard() {
                 {/* TAB 3: SUPPLY HISTORY */}
                 {activeTab === 'history' && (
                     <div style={{ background:'white', padding:'20px', borderRadius:'8px', boxShadow:'0 4px 8px rgba(0,0,0,0.1)' }}>
+
+                              {/* NEW: Conditional Loading UI */}
+                    {loading ? (
+                        <div style={{ padding: '50px 0', textAlign: 'center', fontSize: '1.2em', color: '#0056b3', fontWeight: 'bold' }}>
+                            ⏳ Fetching live data from cloud...
+                        </div>
+                    ) : (
+                        <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                {/* ... your existing <thead> and <tbody> stay exactly the same here ... */}
+                            </table>
+                        </div>
+                    )}
                         {selectedDelivery ? (
                             <div>
                                 <button onClick={() => setSelectedDelivery(null)} style={{ marginBottom: '15px', padding: '8px 15px', cursor: 'pointer', background: '#e9ecef', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}>← Back to History List</button>
@@ -385,7 +411,12 @@ function Dashboard() {
                                     </tbody>
                                 </table>
                             </div>
-                        ) : (
+
+                            
+
+                        )
+                        : (
+                            
                             <div>
                                 <h2 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px' }}>Recent Deliveries</h2>
                                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -423,6 +454,18 @@ function Dashboard() {
                 {/* TAB 4: NEW SALES HISTORY 📈 */}
                 {activeTab === 'salesHistory' && (
                     <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+                              {/* NEW: Conditional Loading UI */}
+                    {loading ? (
+                        <div style={{ padding: '50px 0', textAlign: 'center', fontSize: '1.2em', color: '#0056b3', fontWeight: 'bold' }}>
+                            ⏳ Fetching live data from cloud...
+                        </div>
+                    ) : (
+                        <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                {/* ... your existing <thead> and <tbody> stay exactly the same here ... */}
+                            </table>
+                        </div>
+                    )}
                         {selectedSale ? (
                             <div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
