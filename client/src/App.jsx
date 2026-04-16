@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Billing from './pages/Billing';
 
 // THE FRONTEND BOUNCER
 const ProtectedRoute = ({ children }) => {
@@ -24,6 +25,11 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        <Route path="/billing" element={
+          <ProtectedRoute>
+            <Billing />
+          </ProtectedRoute>
+        } />
         
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>

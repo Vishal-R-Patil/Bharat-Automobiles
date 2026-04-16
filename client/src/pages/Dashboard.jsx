@@ -13,7 +13,6 @@ function Dashboard() {
     const [editingId, setEditingId] = useState(null); 
     const [editForm, setEditForm] = useState({ name: '', brand: '', price: '', stock_qty: '', product_description: '' });
 
-    // New: Quick Add State for the Inventory Tab
     const [isAddingNew, setIsAddingNew] = useState(false);
     const [newInlineProduct, setNewInlineProduct] = useState({ name: '', brand: '', price: '', stock_qty: '', product_description: '' });
 
@@ -22,14 +21,12 @@ function Dashboard() {
     // ==========================================
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
-    // This computes the sorted list instantly without needing a backend request!
     const sortedProducts = [...products].sort((a, b) => {
         if (!sortConfig.key) return 0;
         
         let aValue = a[sortConfig.key];
         let bValue = b[sortConfig.key];
 
-        // Convert strings to lowercase so 'servo' and 'Servo' sort correctly
         if (typeof aValue === 'string') aValue = aValue.toLowerCase();
         if (typeof bValue === 'string') bValue = bValue.toLowerCase();
 
@@ -41,22 +38,34 @@ function Dashboard() {
     const requestSort = (key) => {
         let direction = 'asc';
         if (sortConfig.key === key && sortConfig.direction === 'asc') {
-            direction = 'desc'; // Flip direction if clicked again
+            direction = 'desc'; 
         }
         setSortConfig({ key, direction });
     };
 
     // ==========================================
-    // SUPPLY FORM STATE
+    // 3. SUPPLY FORM STATE
     // ==========================================
     const [supplyInfo, setSupplyInfo] = useState({ supplierName: '', invoiceNumber: '', totalCost: '' });
     const [supplyItems, setSupplyItems] = useState([
         { product_id: null, name: '', brand: '', product_description: '', wholesale_price: '', retail_price: '', quantity: '' }
     ]);
 
+    // ==========================================
+    // 4. NEW: SUPPLY HISTORY STATE
+    // ==========================================
+    const [historyList, setHistoryList] = useState([]);
+    const [selectedDelivery, setSelectedDelivery] = useState(null); 
+    const [detailItems, setDetailItems] = useState([]);
+
     useEffect(() => {
         fetchInventory();
     }, []);
+
+    // Automatically fetch history when the user clicks the History tab
+    useEffect(() => {
+        if (activeTab === 'history') fetchHistory();
+    }, [activeTab]);
 
     const fetchInventory = async () => {
         try {
@@ -66,6 +75,21 @@ function Dashboard() {
             console.error("Error fetching data:", err);
             if (err.response && (err.response.status === 401 || err.response.status === 403)) handleLogout();
         }
+    };
+
+    const fetchHistory = async () => {
+        try {
+            const response = await API.get('/supply/history');
+            setHistoryList(response.data);
+        } catch (err) { console.error(err); }
+    };
+
+    const fetchDeliveryDetails = async (delivery) => {
+        try {
+            const response = await API.get(`/supply/history/${delivery.id}`);
+            setDetailItems(response.data);
+            setSelectedDelivery(delivery);
+        } catch (err) { console.error(err); }
     };
 
     const handleLogout = () => {
@@ -79,7 +103,6 @@ function Dashboard() {
     // ==========================================
     const handleQuickAddSave = async () => {
         try {
-            // Re-uses your original POST route to bypass the heavy supply transaction!
             await API.post('/products', newInlineProduct);
             setIsAddingNew(false);
             setNewInlineProduct({ name: '', brand: '', price: '', stock_qty: '', product_description: '' });
@@ -135,7 +158,6 @@ function Dashboard() {
         setSupplyItems(updatedItems);
     };
 
-// 1. UPDATE THE SMART AUTOFILL
     const handleNameChange = (index, value) => {
         const updatedItems = [...supplyItems];
         updatedItems[index].name = value;
@@ -147,7 +169,6 @@ function Dashboard() {
             updatedItems[index].product_description = existingProduct.product_description;
             updatedItems[index].retail_price = existingProduct.price;
         } else {
-            // Visual feedback that the product is missing
             updatedItems[index].product_id = null; 
             updatedItems[index].brand = '⚠️ UNKNOWN PRODUCT';
             updatedItems[index].product_description = 'Must add to inventory first';
@@ -156,18 +177,16 @@ function Dashboard() {
         setSupplyItems(updatedItems);
     };
 
-       const addLineItem = () => setSupplyItems([...supplyItems, { product_id: null, name: '', brand: '', product_description: '', wholesale_price: '', retail_price: '', quantity: '' }]);
+    const addLineItem = () => setSupplyItems([...supplyItems, { product_id: null, name: '', brand: '', product_description: '', wholesale_price: '', retail_price: '', quantity: '' }]);
     const removeLineItem = (index) => setSupplyItems(supplyItems.filter((_, i) => i !== index));
 
-    // 2. UPDATE THE SUBMIT HANDLER
     const handleSupplySubmit = async (e) => {
         e.preventDefault();
 
-        // THE FRONTEND GUARD: Check for unknown products before sending to backend
         const invalidItems = supplyItems.filter(item => item.product_id === null);
         if (invalidItems.length > 0) {
             alert(`Error: "${invalidItems[0].name}" is not in your database.\n\nPlease go to the 'View Inventory' tab and use '+ Quick Add Product' first!`);
-            return; // Stops the form from submitting!
+            return; 
         }
 
         try {
@@ -176,15 +195,12 @@ function Dashboard() {
             setSupplyInfo({ supplierName: '', invoiceNumber: '', totalCost: '' });
             setSupplyItems([{ product_id: null, name: '', brand: '', product_description: '', wholesale_price: '', retail_price: '', quantity: '' }]);
             fetchInventory();
-            setActiveTab('inventory');
+            setActiveTab('history'); // Switch to history tab to see the new entry
         } catch (error) {
             console.error(error);
-            // This displays the strict error message we created in the backend!
             alert(error.response?.data?.error || "Error saving delivery.");
         }
     };
-
- 
 
     // ==========================================
     // ICONS (SVGs)
@@ -209,17 +225,17 @@ function Dashboard() {
                 <button onClick={handleLogout} style={{ padding: '10px 20px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Logout</button>
             </div>
 
+            {/* NAVIGATION TABS */}
             <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '2px solid #ccc', paddingBottom: '10px' }}>
                 <button onClick={() => setActiveTab('inventory')} style={{ padding: '10px 20px', background: activeTab === 'inventory' ? '#0056b3' : '#e9ecef', color: activeTab === 'inventory' ? 'white' : 'black', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>View Inventory</button>
                 <button onClick={() => setActiveTab('addStock')} style={{ padding: '10px 20px', background: activeTab === 'addStock' ? '#0056b3' : '#e9ecef', color: activeTab === 'addStock' ? 'white' : 'black', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Receive Supply</button>
-                <button onClick={() => setActiveTab('billing')} style={{ padding: '10px 20px', background: activeTab === 'billing' ? '#28a745' : '#e9ecef', color: activeTab === 'billing' ? 'white' : 'black', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Billing Desk 💰</button>
+                <button onClick={() => setActiveTab('history')} style={{ padding: '10px 20px', background: activeTab === 'history' ? '#0056b3' : '#e9ecef', color: activeTab === 'history' ? 'white' : 'black', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Supply History</button>
+                <button onClick={() => navigate('/billing')} style={{ padding: '10px 20px', background: activeTab === 'billing' ? '#28a745' : '#e9ecef', color: activeTab === 'billing' ? 'white' : 'black', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Billing Desk 💰</button>
             </div>
 
             {/* TAB 1: INVENTORY TABLE */}
             {activeTab === 'inventory' && (
                 <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', padding: '20px' }}>
-                    
-                    {/* Header with Quick Add Button */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                         <h2 style={{ margin: 0 }}>Current Stock</h2>
                         {!isAddingNew && (
@@ -234,8 +250,6 @@ function Dashboard() {
                             <thead style={{ backgroundColor: '#0056b3', color: 'white' }}>
                                 <tr>
                                     <th style={{ padding: '15px', textAlign: 'left' }}>S.No</th>
-                                    
-                                    {/* SORTABLE HEADERS */}
                                     <th onClick={() => requestSort('name')} style={{ padding: '15px', textAlign: 'left', cursor: 'pointer', userSelect: 'none' }}>
                                         Product Name {sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
                                     </th>
@@ -251,7 +265,6 @@ function Dashboard() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {/* THE QUICK ADD INLINE ROW */}
                                 {isAddingNew && (
                                     <tr style={{ backgroundColor: '#fff3cd', borderBottom: '2px solid #ffc107' }}>
                                         <td style={{ padding: '15px', fontWeight: 'bold' }}>New</td>
@@ -267,12 +280,10 @@ function Dashboard() {
                                     </tr>
                                 )}
 
-                                {/* MAPPING THROUGH SORTED PRODUCTS */}
                                 {sortedProducts.map((product, index) => (
                                     <tr key={product.id} style={{ borderBottom: '1px solid #eee' }}>
                                         <td style={{ padding: '15px', fontWeight: 'bold', color: '#555' }}>{index + 1}</td>
                                         
-                                        {/* IF EDITING THIS ROW */}
                                         {editingId === product.id ? (
                                             <>
                                                 <td style={{ padding: '10px' }}><input type="text" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} style={{width: '90%', padding: '5px'}}/></td>
@@ -286,7 +297,6 @@ function Dashboard() {
                                                 </td>
                                             </>
                                         ) : (
-                                            /* NORMAL VIEW ROW WITH NEW ICONS */
                                             <>
                                                 <td style={{ padding: '15px', fontWeight: 'bold' }}>{product.name}</td>
                                                 <td style={{ padding: '15px' }}>{product.brand || 'N/A'}</td>
@@ -335,8 +345,90 @@ function Dashboard() {
                     </form>
                 </div>
             )}
+{/* TAB 3: NEW SUPPLY HISTORY */}
+            {activeTab === 'history' && (
+                <div style={{ background:'white', padding:'20px', borderRadius:'8px', boxShadow:'0 4px 8px rgba(0,0,0,0.1)' }}>
+                    
+                    {/* DETAIL VIEW: Showing joined Products for one specific invoice */}
+                    {selectedDelivery ? (
+                        <div>
+                            <button onClick={() => setSelectedDelivery(null)} style={{ marginBottom: '15px', padding: '8px 15px', cursor: 'pointer', background: '#e9ecef', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}>← Back to History List</button>
+                            <h3 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px' }}>Items for Invoice: {selectedDelivery.invoice_number}</h3>
+                            <p>
+                                <strong>Supplier:</strong> {selectedDelivery.supplier_name} | 
+                                <strong> Date:</strong> {new Date(selectedDelivery.delivery_date).toLocaleDateString('en-IN')} | 
+                                <strong> Total Cost:</strong> ₹{selectedDelivery.total_cost}
+                            </p>
+                            
+                            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '15px' }}>
+                                <thead style={{ backgroundColor: '#0056b3', color: 'white' }}>
+                                    <tr>
+                                        <th style={{ padding: '12px', textAlign: 'left' }}>Product Name</th>
+                                        <th style={{ padding: '12px', textAlign: 'left' }}>Brand</th>
+                                        <th style={{ padding: '12px', textAlign: 'left' }}>Wholesale Price</th>
+                                        <th style={{ padding: '12px', textAlign: 'left' }}>Retail Price</th>
+                                        <th style={{ padding: '12px', textAlign: 'left' }}>Quantity Added</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {detailItems.map((item, idx) => (
+                                        <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
+                                            {/* Mapping the variables exactly as the new SQL query outputs them */}
+                                            <td style={{ padding: '12px', fontWeight: 'bold' }}>{item.Product_name}</td>
+                                            <td style={{ padding: '12px' }}>{item.brand}</td>
+                                            <td style={{ padding: '12px' }}>₹{item.Wholesale_price}</td>
+                                            <td style={{ padding: '12px' }}>₹{item.Retail_price}</td>
+                                            <td style={{ padding: '12px', fontWeight: 'bold', color: '#28a745' }}>+{item.Quantity_added}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        
+                        /* MASTER VIEW: Showing all supply_deliveries */
+                        <div>
+                            <h2 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px' }}>Recent Deliveries</h2>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead style={{ backgroundColor: '#0056b3', color: 'white' }}>
+                                    <tr>
+                                        <th style={{ padding: '12px', textAlign: 'left' }}>Delivery ID</th>
+                                        <th style={{ padding: '12px', textAlign: 'left' }}>Date</th>
+                                        <th style={{ padding: '12px', textAlign: 'left' }}>Supplier Name</th>
+                                        <th style={{ padding: '12px', textAlign: 'left' }}>Invoice #</th>
+                                        <th style={{ padding: '12px', textAlign: 'left' }}>Total Cost</th>
+                                        <th style={{ padding: '12px', textAlign: 'center' }}>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {historyList.map(h => (
+                                        <tr key={h.id} style={{ borderBottom: '1px solid #eee' }}>
+                                            <td style={{ padding: '12px' }}>#{h.id}</td>
+                                            
+                                            {/* Added Date formatting tailored for India (DD/MM/YYYY) */}
+                                            <td style={{ padding: '12px', color: '#555' }}>
+                                                {new Date(h.delivery_date).toLocaleDateString('en-IN')}
+                                            </td>
+                                            
+                                            <td style={{ padding: '12px', fontWeight: 'bold' }}>{h.supplier_name}</td>
+                                            <td style={{ padding: '12px' }}>{h.invoice_number}</td>
+                                            <td style={{ padding: '12px' }}>₹{h.total_cost}</td>
+                                            <td style={{ padding: '12px', textAlign: 'center' }}>
+                                                <button onClick={() => fetchDeliveryDetails(h)} style={{ padding: '8px 12px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>View Items</button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {historyList.length === 0 && (
+                                        <tr><td colSpan="6" style={{ padding: '20px', textAlign: 'center', color: '#666' }}>No delivery history found.</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+            )}
 
-            {/* TAB 3: BILLING */}
+            {/* TAB 4: BILLING */}
             {activeTab === 'billing' && (
                 <div style={{ padding: '20px', background: 'white', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
                     <h2>Billing & Checkout Module</h2>

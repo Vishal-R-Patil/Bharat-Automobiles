@@ -59,5 +59,49 @@ const receiveSupply = async (req, res) => {
         connection.release();
     }
 };
+// 1. Get the list of all deliveries
+const getSupplyHistory = async (req, res) => {
+    try {
+        // Fetches the master records, ordered by newest first
+        const sql = `
+            SELECT id, supplier_name, invoice_number, delivery_date, total_cost 
+            FROM supply_deliveries 
+            ORDER BY id DESC
+        `;
+        const [rows] = await db.query(sql);
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to fetch supply history" });
+    }
+};
 
-module.exports = { receiveSupply };
+// 2. THE FIX: Get specific items using a JOIN
+const getSupplyItems = async (req, res) => {
+    try {
+        const deliveryId = req.params.id;
+        
+        // This SQL joins the historical supply_items with the live Products table.
+        // It assumes you are matching them by name (or you can change p.name = si.name to p.id = si.product_id if your schema uses IDs).
+        const sql = `
+            SELECT 
+                p.name AS Product_name,
+                p.brand AS brand,
+                si.wholesale_price AS Wholesale_price,
+                p.price AS Retail_price,
+                si.quantity_added AS Quantity_added
+            FROM supply_items si
+            LEFT JOIN Products p ON si.product_id = p.id
+            WHERE si.delivery_id = ?
+        `;
+        
+        const [rows] = await db.query(sql, [deliveryId]);
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to fetch delivery items" });
+    }
+};
+
+module.exports = { receiveSupply, getSupplyHistory, getSupplyItems };
+
