@@ -6,6 +6,7 @@ function Dashboard() {
     const [activeTab, setActiveTab] = useState('inventory');
     const [products, setProducts] = useState([]);
     const navigate = useNavigate();
+    const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
 
     // ==========================================
     // 1. EDIT & QUICK ADD STATE
@@ -70,6 +71,16 @@ function Dashboard() {
         if (activeTab === 'history') fetchHistory();
         if (activeTab === 'salesHistory') fetchSalesHistory();
     }, [activeTab]);
+
+    useEffect(() => {
+        if (darkMode) {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+        }
+    }, [darkMode]);
 
     // --- API FETCH FUNCTIONS ---
     const fetchInventory = async () => {
@@ -216,10 +227,19 @@ function Dashboard() {
             <div className="no-print dashboard-container">
                 <header className="dashboard-header">
                     <div>
-                        <h1>Bharat Automobiles</h1>
-                        <p className="text-muted">Owner Dashboard & Management</p>
+                        <h1><u>Bharat Automobiles Owner Dashboard </u></h1>
+                        
                     </div>
-                    <button onClick={handleLogout} className="btn btn-danger">Logout</button>
+                    <div className="header-actions">
+                        <button
+                            onClick={() => setDarkMode(prev => !prev)}
+                             className="theme-toggle"
+                        >
+                            <span className="icon sun">☀️</span>
+                            <span className="icon moon">🌙</span>
+                        </button>
+                        <button onClick={handleLogout} className="btn btn-danger">Logout</button>
+                    </div>
                 </header>
 
                 {/* NAVIGATION TABS */}

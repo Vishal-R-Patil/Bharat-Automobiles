@@ -22,6 +22,16 @@
   --shadow-lg: 0 12px 24px rgba(0,0,0,0.12);
 }
 
+.dark {
+  --bg-color: #0f172a;
+  --surface: #1e293b;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --border: #334155;
+
+  --secondary: #1e293b;
+}
+
 body {
   background-color: var(--bg-color);
   color: var(--text-main);
@@ -35,6 +45,7 @@ h1, h2, h3 { color: var(--text-main); margin-top: 0; }
 .text-muted { color: var(--text-muted); font-size: 0.9em; }
 
 /* Layout Containers */
+
 .dashboard-container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
 .card {
   background-color: var(--surface);
@@ -280,9 +291,6 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
 .highlight-box { background: var(--bg-color); padding: 15px; border-radius: var(--radius-sm); }
 .form-row { display: grid; grid-template-columns: 3fr 2fr 2fr auto; gap: 10px; align-items: center; }
 
-/* Dashboard Specifics */
-.dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-
 /* Print Specific Utility Classes */
 .print-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
 .print-header h2 { margin: 0 0 5px 0; font-size: 18px; }
@@ -324,4 +332,140 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
 @keyframes scaleIn {
   from { transform: scale(0.95); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
+}
+
+/* Dashboard Header Layout */
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+/* Center text properly */
+.dashboard-header h1 {
+  margin-bottom: 4px;
+}
+
+
+
+/* Header action buttons (toggle + logout) */
+.dashboard-header .header-actions {
+  position: absolute;
+  right: 0;
+  display: flex;
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .dashboard-header .header-actions {
+    position: static;
+    margin-top: 10px;
+    justify-content: center;
+  }
+}
+
+.dark body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+}
+
+.dark .card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.dark table {
+  background: var(--surface);
+}
+
+.dark th {
+  background: #1e293b;
+  color: var(--text-muted);
+}
+
+.dark td {
+  color: var(--text-main);
+}
+
+.dark tr:hover td {
+  background: linear-gradient(90deg, #1e293b, #334155);
+}
+
+.dark .tab-btn {
+  background: var(--surface);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.dark .tab-btn:hover {
+  background: #334155;
+}
+
+.dark .tab-btn.active {
+  background: linear-gradient(135deg, var(--primary), #6366f1);
+  color: white;
+}
+
+.dark .input-field {
+  background: var(--surface);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+}
+
+.dark .modal-content {
+  background: var(--surface);
+}
+
+.dark .login-card {
+  background: var(--surface);
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-toggle:hover {
+  transform: rotate(20deg) scale(1.1);
+}
+
+.theme-toggle .icon {
+  position: absolute;
+  transition: transform 0.5s ease, opacity 0.3s ease;
+}
+
+/* Sun visible in light mode */
+.theme-toggle .sun {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+.theme-toggle .moon {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.5);
+}
+
+/* When dark mode is active */
+.dark .theme-toggle .sun {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.5);
+}
+
+.dark .theme-toggle .moon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
 }
