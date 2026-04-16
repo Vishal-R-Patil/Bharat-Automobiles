@@ -3,8 +3,9 @@ import axios from 'axios';
 
 // 1. Point our messenger to the Node.js backend
 const API = axios.create({
-    // baseURL: 'http://localhost:3000/api',
-    baseURL: "https://bharatautomobiles.onrender.com/api",
+    baseURL: import.meta.env.VITE_BASE_URL || "http://localhost:3000/api", // Fallback to localhost if env variable is missing
+    // baseURL: "http://localhost:3000/api",
+    // baseURL: "https://bharatautomobiles.onrender.com/api",
 });
 
 // 2. The Auto-Bouncer: Before any request leaves the frontend, attach the token!
