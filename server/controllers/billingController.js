@@ -16,12 +16,20 @@ const processCheckout = async (req, res) => {
         // ==========================================
         // STEP 1 & 4: Validate Stock BEFORE doing anything
         // ==========================================
+        // Step 1: Aggregate quantities by product_id
+        const productTotals = {};
         for (let item of items) {
-            // 'FOR UPDATE' temporarily locks this row. It prevents race conditions
-            // if two cashiers try to sell the last bottle at the exact same time!
+            if (!productTotals[item.product_id]) {
+                productTotals[item.product_id] = 0;
+            }
+            productTotals[item.product_id] += item.quantity;
+        }
+
+        // Step 2: Validate aggregated quantities
+        for (let productId in productTotals) {
             const [productRows] = await connection.query(
                 'SELECT name, stock_qty FROM Products WHERE id = ? FOR UPDATE',
-                [item.product_id]
+                [productId]
             );
 
             if (productRows.length === 0) {
@@ -30,10 +38,10 @@ const processCheckout = async (req, res) => {
 
             const currentStock = productRows[0].stock_qty;
             const productName = productRows[0].name;
+            const totalRequested = productTotals[productId];
 
-            // THE GUARDRAIL: If they try to sell more than they have, trigger the rollback!
-            if (currentStock < item.quantity) {
-                throw new Error(`Cannot complete sale! You only have ${currentStock} units of "${productName}" left in stock.`);
+            if (currentStock < totalRequested) {
+                throw new Error(`Cannot complete sale! You only have ${currentStock} units of "${productName}" but tried to sell ${totalRequested}.`);
             }
         }
 
@@ -56,11 +64,13 @@ const processCheckout = async (req, res) => {
                 'INSERT INTO Transaction_Items (transaction_id, product_id, quantity, price_at_sale) VALUES (?, ?, ?, ?)',
                 [transactionId, item.product_id, item.quantity, item.price_at_sale]
             );
+        }
 
-            // B. Subtract the sold quantity from the main inventory
+        // Deduct inventory using aggregated quantities
+        for (let productId in productTotals) {
             await connection.query(
                 'UPDATE Products SET stock_qty = stock_qty - ? WHERE id = ?',
-                [item.quantity, item.product_id]
+                [productTotals[productId], productId]
             );
         }
 

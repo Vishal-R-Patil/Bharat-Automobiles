@@ -358,6 +358,34 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
   gap: 10px;
 }
 
+/* Back to Dashboard button (left aligned + styled) */
+.dashboard-header .btn-backToDashboard {
+  position: absolute;
+  left: 0;
+
+  background: linear-gradient(135deg, var(--secondary), #e0e7ff);
+  color: var(--primary);
+  border: 1px solid var(--border);
+
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.dashboard-header .btn-backToDashboard:hover {
+  background: linear-gradient(135deg, var(--primary), #6366f1);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
+}
+
+.dashboard-header .btn-backToDashboard:active {
+  transform: scale(0.97);
+}
+
+
 @media (max-width: 600px) {
   .dashboard-header .header-actions {
     position: static;

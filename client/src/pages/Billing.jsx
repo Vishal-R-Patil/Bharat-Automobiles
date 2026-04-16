@@ -90,7 +90,7 @@ function Billing() {
             if (shouldPrint)
                 {
                     window.print();
-                    setTimeout(() => {}, 1000);   // put some delay for print dialog to open before resetting the form in mobile browsers
+                    setTimeout(() => {}, 2000);   // put some delay for print dialog to open before resetting the form in mobile browsers
                 }  
                     
             
@@ -113,9 +113,9 @@ function Billing() {
                 <header className="dashboard-header">
                     <div>
                         <h1>Bharat Automobiles POS</h1>
-                        <p className="text-muted m-0">Point of Sale & Billing Desk</p>
+                        <pre className="text-muted m-0">           Point of Sale & Billing Desk</pre>
                     </div>
-                    <button onClick={() => navigate('/dashboard')} className="btn btn-outline">
+                    <button className="btn btn-backToDashboard" onClick={() => navigate('/dashboard')} >
                         ← Back to Dashboard
                     </button>
                 </header>
@@ -123,13 +123,14 @@ function Billing() {
                 <div className="billing-grid">
                     {/* LEFT SIDE: The Cart */}
                     <div className="card m-0">
-                        <h2 className="border-bottom pb-2">Shopping Cart</h2>
+                        <h2 className="border-bottom pb-2">Billing Cart</h2>
                         <datalist id="billing-suggestions">{products.map(p => <option key={p.id} value={p.name} />)}</datalist>
 
                         <div className="table-wrapper mb-3">
                             <table className="data-table">
                                 <thead>
                                     <tr>
+                                        <th>#</th>
                                         <th>Product</th>
                                         <th>Price</th>
                                         <th className="text-center">Qty</th>
@@ -140,8 +141,9 @@ function Billing() {
                                 <tbody>
                                     {cartItems.map((item, index) => (
                                         <tr key={index}>
+                                            <td className="text-center font-bold">{index + 1}</td>
                                             <td>
-                                                <input type="text" list="billing-suggestions" placeholder="Search Oil..." value={item.name} onChange={(e) => handleNameChange(index, e.target.value)} className="input-field" />
+                                                <input type="text" list="billing-suggestions" placeholder="Type product name" value={item.name} onChange={(e) => handleNameChange(index, e.target.value)} className="input-field" />
                                                 {item.product_id && item.stock_qty < 5 && <span className="text-danger text-sm mt-1 block">Only {item.stock_qty} left in stock!</span>}
                                             </td>
                                             <td className="font-bold">₹{item.price}</td>
@@ -177,9 +179,11 @@ function Billing() {
                             <span>₹{discountAmount}</span>
                         </div>
 
-                        <button onClick={handleCheckoutClick} className="btn btn-primary w-100" style={{ padding: '15px', fontSize: '1.2em' }}>
-                            Complete Sale
-                        </button>
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <button onClick={handleCheckoutClick} className="btn btn-primary" style={{ padding: '15px', fontSize: '1em', width: '80%' }}>
+                                Complete Sale
+                            </button>
+                        </div>
                     </div>
                 </div>
 
