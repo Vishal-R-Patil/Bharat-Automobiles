@@ -14,6 +14,8 @@ function Billing() {
     const [finalAmount, setFinalAmount] = useState('');
     const [discountAmount, setDiscountAmount] = useState(0);
     const [showModal, setShowModal] = useState(false);
+    // Print snapshot state
+    const [printData, setPrintData] = useState({ items: [], subTotal: 0, finalAmount: 0, discountAmount: 0 });
 
     useEffect(() => {
         const fetchInventory = async () => {
@@ -87,7 +89,15 @@ function Billing() {
         try {
             await API.post('/billing/checkout', transactionPayload);
             setShowModal(false);
-            if (shouldPrint) window.print();
+            if (shouldPrint) {
+                setPrintData({
+                    items: validItems.map(item => ({ ...item })),
+                    subTotal,
+                    finalAmount,
+                    discountAmount
+                });
+                setTimeout(() => window.print(), 100);
+            }
             
             setCartItems([{ product_id: null, name: '', price: 0, quantity: 1, total: 0, stock_qty: 0 }]);
             setSubTotal(0); setFinalAmount(''); setDiscountAmount(0);
@@ -237,7 +247,7 @@ function Billing() {
                         </tr>
                     </thead>
                     <tbody>
-                        {cartItems.map((item, idx) => item.product_id && (
+                        {printData.items.map((item, idx) => (
                             <tr key={idx}>
                                 {/* Item name will wrap automatically if it is too long */}
                                 <td style={{ padding: '4px 0', wordBreak: 'break-word', paddingRight: '5px' }}>{item.name}</td>
@@ -251,17 +261,17 @@ function Billing() {
                 <div style={{ borderTop: '1px solid #000', paddingTop: '5px', fontSize: '12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0' }}>
                         <span>Subtotal:</span>
-                        <span>{subTotal}</span>
+                        <span>{printData.subTotal}</span>
                     </div>
-                    {discountAmount > 0 && (
+                    {printData.discountAmount > 0 && (
                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0' }}>
                             <span>Discount:</span>
-                            <span>-{discountAmount}</span>
+                            <span>-{printData.discountAmount}</span>
                         </div>
                     )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px', marginTop: '5px', borderTop: '1px dashed #000', paddingTop: '5px' }}>
                         <span>TOTAL:</span>
-                        <span>Rs {finalAmount}</span>
+                        <span>Rs {printData.finalAmount}</span>
                     </div>
                 </div>
 
