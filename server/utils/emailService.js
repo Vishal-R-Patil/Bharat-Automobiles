@@ -69,9 +69,9 @@ const startDailyReportJob = () =>
 {
     const schedule = '0 21 * * *'; // 9 PM daily
     const scheduleTest = '*/1 * * * *'; // every minute for testing
-    cron.schedule(scheduleTest, async () =>
+    cron.schedule(schedule, async () =>
     {
-        console.log("⏰ Running Daily Sales Report... Schedule:", scheduleTest);
+        console.log("⏰ Running Daily Sales Report... Schedule:", schedule);
 
         try
         {
