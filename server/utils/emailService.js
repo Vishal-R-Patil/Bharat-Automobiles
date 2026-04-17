@@ -13,7 +13,8 @@ const transporter = nodemailer.createTransport({
 });
 
 // Email sender
-const sendDailyReport = async (total, count) => {
+const sendDailyReport = async (total, count) =>
+{
     const today = new Date();
     const formattedDate = today.toLocaleDateString('en-IN', {
         day: 'numeric',
@@ -26,7 +27,8 @@ const sendDailyReport = async (total, count) => {
     const buffers = [];
 
     doc.on('data', buffers.push.bind(buffers));
-    doc.on('end', async () => {
+    doc.on('end', async () =>
+    {
         const pdfData = Buffer.concat(buffers);
 
         await transporter.sendMail({
@@ -63,11 +65,14 @@ const sendDailyReport = async (total, count) => {
 
 // Cron job starter
 // for testing '*/1 * * * *' (every minute) change to '0 21 * * *' for 9PM daily
-const startDailyReportJob = () => {
-    cron.schedule('*/1 * * * *', async () => {
+const startDailyReportJob = () =>
+{
+    cron.schedule('0 21 * * *', async () =>
+    {
         console.log("⏰ Running Daily Sales Report...");
 
-        try {
+        try
+        {
             const [rows] = await db.query(`
                 SELECT 
                     SUM(final_amount) as total,
@@ -82,7 +87,8 @@ const startDailyReportJob = () => {
             await sendDailyReport(total, count);
 
             console.log("✅ Daily report email sent");
-        } catch (err) {
+        } catch (err)
+        {
             console.error("❌ Error sending report:", err);
         }
     });
