@@ -327,7 +327,7 @@ function Dashboard() {
                                                             <td className="font-bold">{product.name}</td>
                                                             <td>{product.category || 'N/A'}</td>
                                                             <td className="text-muted text-sm">{product.product_description || 'No description'}</td>
-                                                            <td>₹{product.price}</td>
+                                                            <td>₹{Number(product.price).toLocaleString('en-IN')}</td>
                                                             <td className="font-bold">
                                                                 <span className={`badge ${product.stock_qty < 5 ? 'badge-low' : 'badge-good'}`}>{product.stock_qty}</span>
                                                             </td>
@@ -401,8 +401,8 @@ function Dashboard() {
                                                         <tr key={idx}>
                                                             <td className="font-bold">{item.Product_name || item.product_name}</td>
                                                             <td>{item.category}</td>
-                                                            <td>₹{item.Wholesale_price || item.wholesale_price}</td>
-                                                            <td>₹{item.Retail_price || item.retail_price}</td>
+                                                            <td>₹{Number(item.Wholesale_price || item.wholesale_price).toLocaleString('en-IN')}</td>
+                                                            <td>₹{Number(item.Retail_price || item.retail_price).toLocaleString('en-IN')}</td>
                                                             <td className="font-bold text-success">+{item.Quantity_added || item.quantity_added}</td>
                                                         </tr>
                                                     ))}
@@ -432,7 +432,7 @@ function Dashboard() {
                                                             <td className="text-muted">{new Date(h.delivery_date).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</td>
                                                             <td className="font-bold">{h.supplier_name}</td>
                                                             <td>{h.invoice_number}</td>
-                                                            <td>₹{h.total_cost}</td>
+                                                            <td>₹{Number(h.total_cost).toLocaleString('en-IN')}</td>
                                                             <td className="text-center">
                                                                 <button onClick={() => fetchDeliveryDetails(h)} className="btn btn-outline">View Items</button>
                                                             </td>
@@ -503,17 +503,44 @@ function Dashboard() {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {salesList.map(sale => (
-                                                        <tr key={sale.id}>
-                                                            <td className="text-muted">{new Date(sale.sale_date).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</td>
-                                                            <td>₹{sale.sub_total}</td>
-                                                            <td className="text-danger">₹{sale.discount_amount}</td>
-                                                            <td className="font-bold text-success">₹{sale.final_amount}</td>
-                                                            <td className="text-center">
-                                                                <button onClick={() => fetchSaleDetails(sale)} className="btn btn-outline">View Bill</button>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
+                                                    {(() => {
+                                                        const groupedSales = salesList.reduce((acc, sale) => {
+                                                            const dateKey = new Date(sale.sale_date).toLocaleDateString('en-IN', { dateStyle: 'medium' });
+                                                            if (!acc[dateKey]) acc[dateKey] = [];
+                                                            acc[dateKey].push(sale);
+                                                            return acc;
+                                                        }, {});
+
+                                                        return Object.entries(groupedSales)
+                                                            .sort((a, b) => new Date(b[0]) - new Date(a[0]))
+                                                            .map(([date, sales]) => {
+                                                                const totalForDay = sales.reduce((sum, s) => sum + Number(s.final_amount), 0);
+
+                                                                return (
+                                                                    <>
+                                                                        <tr className="bg-highlight">
+                                                                            <td colSpan="5" className="font-bold">
+                                                                                📅 {date} | Total Sale: ₹{Number(totalForDay).toLocaleString('en-IN')}
+                                                                            </td>
+                                                                        </tr>
+
+                                                                        {sales.map(sale => (
+                                                                            <tr key={sale.id}>
+                                                                                <td className="text-muted">
+                                                                                    {new Date(sale.sale_date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                                                                                </td>
+                                                                                <td>₹{Number(sale.sub_total).toLocaleString('en-IN')}</td>
+                                                                                <td className="text-danger">₹{Number(sale.discount_amount).toLocaleString('en-IN')}</td>
+                                                                                <td className="font-bold text-success">₹{Number(sale.final_amount).toLocaleString('en-IN')}</td>
+                                                                                <td className="text-center">
+                                                                                    <button onClick={() => fetchSaleDetails(sale)} className="btn btn-outline">View Bill</button>
+                                                                                </td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </>
+                                                                );
+                                                            });
+                                                    })()}
                                                     {salesList.length === 0 && <tr><td colSpan="5" className="text-center text-muted p-4">No sales recorded yet.</td></tr>}
                                                 </tbody>
                                             </table>

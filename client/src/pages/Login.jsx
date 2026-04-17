@@ -28,7 +28,7 @@ function Login() {
             <form onSubmit={handleLogin} className="login-card">
                 <div className="text-center mb-3">
                     <h2 className="m-0 text-primary">Bharat Automobiles</h2>
-                    <p className="text-muted m-0">Authorized Dealer Portal</p>
+                    <p className="text-muted m-0">Login Portal</p>
                 </div>
                 
                 <div>
