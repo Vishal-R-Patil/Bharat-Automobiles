@@ -286,7 +286,18 @@ function Dashboard() {
                                                 <tr className="bg-highlight">
                                                     <td className="font-bold"><span className="badge badge-good">New</span></td>
                                                     <td><input type="text" placeholder="Name" value={newInlineProduct.name} onChange={e => setNewInlineProduct({...newInlineProduct, name: e.target.value})} className="input-field"/></td>
-                                                    <td><input type="text" placeholder="Category" value={newInlineProduct.category} onChange={e => setNewInlineProduct({...newInlineProduct, category: e.target.value})} className="input-field"/></td>
+                                                    <td>
+                                                        <select
+                                                            value={newInlineProduct.category}
+                                                            onChange={e => setNewInlineProduct({...newInlineProduct, category: e.target.value})}
+                                                            className="input-field"
+                                                        >
+                                                            <option value="">Select Category</option>
+                                                            <option value="misc">Misc</option>
+                                                            <option value="lubricant">Lubricant</option>
+                                                            <option value="tyres">Tyres</option>
+                                                        </select>
+                                                    </td>
                                                     <td><input type="text" placeholder="Description" value={newInlineProduct.product_description} onChange={e => setNewInlineProduct({...newInlineProduct, product_description: e.target.value})} className="input-field"/></td>
                                                     <td><input type="number" placeholder="₹" value={newInlineProduct.price} onChange={e => setNewInlineProduct({...newInlineProduct, price: e.target.value})} className="input-field"/></td>
                                                     <td><input type="number" placeholder="Qty" value={newInlineProduct.stock_qty} onChange={e => setNewInlineProduct({...newInlineProduct, stock_qty: e.target.value})} className="input-field"/></td>
@@ -550,13 +561,13 @@ function Dashboard() {
             <tbody>
                 {saleItems.map((item, idx) => (
                     <tr key={idx}>
-                        <td style={{ padding: '4px 0', wordBreak: 'break-word', paddingRight: '5px' }}>
+                        <td style={{ padding: '4px 0', wordBreak: 'break-word', paddingRight: '5px', fontWeight: 'bold', color: '#000' }}>
                             {item.product_name}
                         </td>
-                        <td style={{ textAlign: 'center', padding: '4px 0' }}>
+                        <td style={{ textAlign: 'center', padding: '4px 0', fontWeight: 'bold', color: '#000' }}>
                             {item.quantity}
                         </td>
-                        <td style={{ textAlign: 'right', padding: '4px 0' }}>
+                        <td style={{ textAlign: 'right', padding: '4px 0', fontWeight: 'bold', color: '#000' }}>
                             {item.quantity * item.price_at_sale}
                         </td>
                     </tr>

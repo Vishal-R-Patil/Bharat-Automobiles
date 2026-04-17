@@ -250,9 +250,15 @@ function Billing() {
                         {printData.items.map((item, idx) => (
                             <tr key={idx}>
                                 {/* Item name will wrap automatically if it is too long */}
-                                <td style={{ padding: '4px 0', wordBreak: 'break-word', paddingRight: '5px' }}>{item.name}</td>
-                                <td style={{ textAlign: 'center', padding: '4px 0' }}>{item.quantity}</td>
-                                <td style={{ textAlign: 'right', padding: '4px 0' }}>{item.total}</td>
+                                <td style={{ padding: '4px 0', wordBreak: 'break-word', paddingRight: '5px', fontWeight: 'bold', color: '#000' }}>
+                                    {item.name}
+                                </td>
+                                <td style={{ textAlign: 'center', padding: '4px 0', fontWeight: 'bold', color: '#000' }}>
+                                    {item.quantity}
+                                </td>
+                                <td style={{ textAlign: 'right', padding: '4px 0', fontWeight: 'bold', color: '#000' }}>
+                                    {item.total}
+                                </td>
                             </tr>
                         ))}
                     </tbody>
