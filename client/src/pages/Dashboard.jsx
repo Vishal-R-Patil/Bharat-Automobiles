@@ -364,7 +364,7 @@ function Dashboard() {
                                             <input type="text" list="product-suggestions" placeholder="Type Product Name" required value={item.name} onChange={(e) => handleNameChange(index, e.target.value)} className="input-field" />
                                             <input type="number" placeholder="Wholesale (₹)" required value={item.wholesale_price} onChange={(e) => handleItemChange(index, 'wholesale_price', e.target.value)} className="input-field" />
                                             <input type="number" placeholder="Qty Arrived" required value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', e.target.value)} className="input-field" />
-                                            {supplyItems.length > 1 && <button type="button" onClick={() => removeLineItem(index)} className="btn btn-danger"><TrashIcon /></button>}
+                                            {supplyItems.length > 1 && <button type="button" onClick={() => removeLineItem(index)} className="btn btn-icon"><TrashIcon /></button>}
                                         </div>
                                     ))}
                                     
