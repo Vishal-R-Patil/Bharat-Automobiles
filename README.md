@@ -29,12 +29,16 @@ It features a public-facing storefront for customers and a highly secure, role-b
 
 - **Live Inventory Dashboard:** Full CRUD operations with low-stock visual warnings (qty < 5).
 - **Master-Detail Supply Routing:** Handles complex incoming truck deliveries by splitting data into `Supply_Deliveries` (Header) and `Supply_Items` (Details) to track wholesale costs and accurately calculate profit margins.
+- **Category System Upgrade:** Replaced free-text brand field with ENUM-based category (`misc`, `lubricant`, `tyres`) for data consistency.
 
 ### 💰 Point of Sale (Billing Desk)
 
 - **Reactive Cart Math:** Auto-calculates subtotals, applies manual overrides for discounts, and guards against negative quantities or out-of-stock sales using Database Row Locking (`FOR UPDATE`).
 - **Thermal Printer Integration:** Custom CSS `@media print` logic strictly formatted for standard 80mm continuous-roll POS receipt printers.
 - **Mobile-Optimized Print Handling:** Implements asynchronous `setTimeout` safeguards to prevent React state race conditions when printing from iPads/mobile browsers.
+- **Robust Stock Validation:** Aggregates duplicate products in cart before validation to prevent negative inventory issues.
+- **Mobile-Safe Printing:** Uses snapshot-based print data to avoid ₹0 total issue on mobile browsers.
+- **Improved Receipt UI:** Enhanced readability with bold product names and optimized thermal layout.
 
 ### 📈 Sales History
 
@@ -79,3 +83,81 @@ To run this project locally, you will need Node.js and a local instance of MySQL
 git clone [https://github.com/YOUR_USERNAME/bharat-automobiles.git](https://github.com/YOUR_USERNAME/bharat-automobiles.git)
 cd bharat-automobiles
 ```
+
+### 2. Setup Backend (Server)
+
+```bash
+cd server
+npm install
+```
+
+Create a `.env` file in `/server`:
+
+```env
+DB_HOST=your_mysql_host
+DB_USER=your_mysql_user
+DB_PASSWORD=your_mysql_password
+DB_NAME=your_database_name
+JWT_SECRET=your_secret_key
+```
+
+Start backend:
+
+```bash
+npm start
+```
+
+---
+
+### 3. Setup Frontend (Client)
+
+```bash
+cd ../client
+npm install
+```
+
+Create `.env` in `/client`:
+
+```env
+VITE_API_BASE_URL=http://localhost:3000/api
+```
+
+Run frontend:
+
+```bash
+npm run dev
+```
+
+---
+
+### 4. Database Setup
+
+- Create MySQL database
+- Import schema (tables: Users, Products, Transactions, Transaction_Items, Supply_Deliveries, Supply_Items)
+- Ensure `category` column in Products uses ENUM:
+
+```sql
+ALTER TABLE Products
+MODIFY COLUMN category ENUM('misc','lubricant','tyres') NOT NULL;
+```
+
+---
+
+### 5. Run the App
+
+- Backend → http://localhost:3000
+- Frontend → http://localhost:5173
+
+Login with seeded credentials or manually insert a user.
+
+---
+
+### 6. Test Flow
+
+1. Add products (Inventory)
+2. Add supply (Stock increases)
+3. Perform billing
+4. Print receipt (test mobile + desktop)
+5. Check sales history
+
+---
