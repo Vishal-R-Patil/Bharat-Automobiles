@@ -64,7 +64,7 @@ const sendDailyReport = async (total, count) => {
 // Cron job starter
 // for testing '*/1 * * * *' (every minute) change to '0 21 * * *' for 9PM daily
 const startDailyReportJob = () => {
-    cron.schedule('*/1 * * * *', async () => {
+    cron.schedule('0 21 * * *', async () => {
         console.log("⏰ Running Daily Sales Report...");
 
         try {
