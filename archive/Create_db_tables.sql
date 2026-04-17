@@ -64,4 +64,3 @@ CREATE TABLE Supply_Items (
     FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE RESTRICT
 );
 
--- Initialize cloud database

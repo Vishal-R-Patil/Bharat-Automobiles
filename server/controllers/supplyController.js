@@ -86,7 +86,7 @@ const getSupplyItems = async (req, res) => {
         const sql = `
             SELECT 
                 p.name AS Product_name,
-                p.brand AS brand,
+                p.category AS category,
                 si.wholesale_price AS Wholesale_price,
                 p.price AS Retail_price,
                 si.quantity_added AS Quantity_added

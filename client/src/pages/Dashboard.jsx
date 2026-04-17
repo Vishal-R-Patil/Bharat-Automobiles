@@ -12,9 +12,9 @@ function Dashboard() {
     // 1. EDIT & QUICK ADD STATE
     // ==========================================
     const [editingId, setEditingId] = useState(null); 
-    const [editForm, setEditForm] = useState({ name: '', brand: '', price: '', stock_qty: '', product_description: '' });
+    const [editForm, setEditForm] = useState({ name: '', category: '', price: '', stock_qty: '', product_description: '' });
     const [isAddingNew, setIsAddingNew] = useState(false);
-    const [newInlineProduct, setNewInlineProduct] = useState({ name: '', brand: '', price: '', stock_qty: '', product_description: '' });
+    const [newInlineProduct, setNewInlineProduct] = useState({ name: '', category: '', price: '', stock_qty: '', product_description: '' });
     
     // Universal loading state
     const [loading, setLoading] = useState(false);
@@ -46,7 +46,7 @@ function Dashboard() {
     // ==========================================
     const [supplyInfo, setSupplyInfo] = useState({ supplierName: '', invoiceNumber: '', totalCost: '' });
     const [supplyItems, setSupplyItems] = useState([
-        { product_id: null, name: '', brand: '', product_description: '', wholesale_price: '', retail_price: '', quantity: '' }
+        { product_id: null, name: '', category: '', product_description: '', wholesale_price: '', retail_price: '', quantity: '' }
     ]);
 
     // ==========================================
@@ -136,7 +136,7 @@ function Dashboard() {
             setLoading(true);
             await API.post('/products', newInlineProduct);
             setIsAddingNew(false);
-            setNewInlineProduct({ name: '', brand: '', price: '', stock_qty: '', product_description: '' });
+            setNewInlineProduct({ name: '', category: '', price: '', stock_qty: '', product_description: '' });
             fetchInventory();
         } catch (err) { alert("Failed to quick-add product."); }
         finally { setLoading(false); }
@@ -144,7 +144,7 @@ function Dashboard() {
 
     const handleEditClick = (product) => {
         setEditingId(product.id); 
-        setEditForm({ name: product.name, brand: product.brand, price: product.price, stock_qty: product.stock_qty, product_description: product.product_description });
+        setEditForm({ name: product.name, category: product.category, price: product.price, stock_qty: product.stock_qty, product_description: product.product_description });
     };
 
     const handleSaveEdit = async (id) => {
@@ -174,16 +174,16 @@ function Dashboard() {
         const existingProduct = products.find(p => p.name.toLowerCase().trim() === value.toLowerCase().trim());
 
         if (existingProduct) {
-            updatedItems[index].product_id = existingProduct.id; updatedItems[index].brand = existingProduct.brand;
+            updatedItems[index].product_id = existingProduct.id; updatedItems[index].category = existingProduct.category;
             updatedItems[index].product_description = existingProduct.product_description; updatedItems[index].retail_price = existingProduct.price;
         } else {
-            updatedItems[index].product_id = null; updatedItems[index].brand = '⚠️ UNKNOWN PRODUCT';
+            updatedItems[index].product_id = null; updatedItems[index].category = '⚠️ UNKNOWN PRODUCT';
             updatedItems[index].product_description = 'Must add to inventory first'; updatedItems[index].retail_price = '';
         }
         setSupplyItems(updatedItems);
     };
 
-    const addLineItem = () => setSupplyItems([...supplyItems, { product_id: null, name: '', brand: '', product_description: '', wholesale_price: '', retail_price: '', quantity: '' }]);
+    const addLineItem = () => setSupplyItems([...supplyItems, { product_id: null, name: '', category: '', product_description: '', wholesale_price: '', retail_price: '', quantity: '' }]);
     const removeLineItem = (index) => setSupplyItems(supplyItems.filter((_, i) => i !== index));
 
     const handleSupplySubmit = async (e) => {
@@ -195,7 +195,7 @@ function Dashboard() {
             await API.post('/supply', { supplyInfo, items: supplyItems });
             alert("Success! Delivery logged and inventory updated.");
             setSupplyInfo({ supplierName: '', invoiceNumber: '', totalCost: '' });
-            setSupplyItems([{ product_id: null, name: '', brand: '', product_description: '', wholesale_price: '', retail_price: '', quantity: '' }]);
+            setSupplyItems([{ product_id: null, name: '', category: '', product_description: '', wholesale_price: '', retail_price: '', quantity: '' }]);
             fetchInventory();
             setActiveTab('history');
         } catch (error) { alert(error.response?.data?.error || "Error saving delivery."); }
@@ -274,7 +274,7 @@ function Dashboard() {
                                             <tr>
                                                 <th>S.No</th>
                                                 <th onClick={() => requestSort('name')} className="cursor-pointer">Product Name {sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}</th>
-                                                <th>Brand</th>
+                                                <th>Category</th>
                                                 <th>Description</th>
                                                 <th onClick={() => requestSort('price')} className="cursor-pointer">Retail Price {sortConfig.key === 'price' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}</th>
                                                 <th onClick={() => requestSort('stock_qty')} className="cursor-pointer">Stock Qty {sortConfig.key === 'stock_qty' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}</th>
@@ -286,8 +286,8 @@ function Dashboard() {
                                                 <tr className="bg-highlight">
                                                     <td className="font-bold"><span className="badge badge-good">New</span></td>
                                                     <td><input type="text" placeholder="Name" value={newInlineProduct.name} onChange={e => setNewInlineProduct({...newInlineProduct, name: e.target.value})} className="input-field"/></td>
-                                                    <td><input type="text" placeholder="Brand" value={newInlineProduct.brand} onChange={e => setNewInlineProduct({...newInlineProduct, brand: e.target.value})} className="input-field"/></td>
-                                                    <td><input type="text" placeholder="Desc" value={newInlineProduct.product_description} onChange={e => setNewInlineProduct({...newInlineProduct, product_description: e.target.value})} className="input-field"/></td>
+                                                    <td><input type="text" placeholder="Category" value={newInlineProduct.category} onChange={e => setNewInlineProduct({...newInlineProduct, category: e.target.value})} className="input-field"/></td>
+                                                    <td><input type="text" placeholder="Description" value={newInlineProduct.product_description} onChange={e => setNewInlineProduct({...newInlineProduct, product_description: e.target.value})} className="input-field"/></td>
                                                     <td><input type="number" placeholder="₹" value={newInlineProduct.price} onChange={e => setNewInlineProduct({...newInlineProduct, price: e.target.value})} className="input-field"/></td>
                                                     <td><input type="number" placeholder="Qty" value={newInlineProduct.stock_qty} onChange={e => setNewInlineProduct({...newInlineProduct, stock_qty: e.target.value})} className="input-field"/></td>
                                                     <td className="text-center flex-gap">
@@ -302,7 +302,7 @@ function Dashboard() {
                                                     {editingId === product.id ? (
                                                         <>
                                                             <td><input type="text" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} className="input-field"/></td>
-                                                            <td><input type="text" value={editForm.brand} onChange={e => setEditForm({...editForm, brand: e.target.value})} className="input-field"/></td>
+                                                            <td><input type="text" value={editForm.category} onChange={e => setEditForm({...editForm, category: e.target.value})} className="input-field"/></td>
                                                             <td><input type="text" value={editForm.product_description} onChange={e => setEditForm({...editForm, product_description: e.target.value})} className="input-field"/></td>
                                                             <td><input type="number" value={editForm.price} onChange={e => setEditForm({...editForm, price: e.target.value})} className="input-field"/></td>
                                                             <td><input type="number" value={editForm.stock_qty} onChange={e => setEditForm({...editForm, stock_qty: e.target.value})} className="input-field"/></td>
@@ -314,7 +314,7 @@ function Dashboard() {
                                                     ) : (
                                                         <>
                                                             <td className="font-bold">{product.name}</td>
-                                                            <td>{product.brand || 'N/A'}</td>
+                                                            <td>{product.category || 'N/A'}</td>
                                                             <td className="text-muted text-sm">{product.product_description || 'No description'}</td>
                                                             <td>₹{product.price}</td>
                                                             <td className="font-bold">
@@ -379,7 +379,7 @@ function Dashboard() {
                                                 <thead>
                                                     <tr>
                                                         <th>Product Name</th>
-                                                        <th>Brand</th>
+                                                        <th>Category</th>
                                                         <th>Wholesale Price</th>
                                                         <th>Retail Price</th>
                                                         <th>Quantity Added</th>
@@ -389,7 +389,7 @@ function Dashboard() {
                                                     {detailItems.map((item, idx) => (
                                                         <tr key={idx}>
                                                             <td className="font-bold">{item.Product_name || item.product_name}</td>
-                                                            <td>{item.brand}</td>
+                                                            <td>{item.category}</td>
                                                             <td>₹{item.Wholesale_price || item.wholesale_price}</td>
                                                             <td>₹{item.Retail_price || item.retail_price}</td>
                                                             <td className="font-bold text-success">+{item.Quantity_added || item.quantity_added}</td>

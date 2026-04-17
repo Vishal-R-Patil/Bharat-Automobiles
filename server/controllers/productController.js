@@ -15,12 +15,12 @@ const getAllProducts = async (req, res) => {
 // Add a new product
 const addProduct = async (req, res) => {
     try {
-        const { name, brand, product_description, price, stock_qty } = req.body;
+        const { name, category, product_description, price, stock_qty } = req.body;
         const sql = `
-            INSERT INTO Products (name, brand, product_description, price, stock_qty) 
+            INSERT INTO Products (name, category, product_description, price, stock_qty) 
             VALUES (?, ?, ?, ?, ?)
         `;
-        const values = [name, brand, product_description, price, stock_qty];
+        const values = [name, category, product_description, price, stock_qty];
 
         const [result] = await db.query(sql, values);
         res.status(201).json({ message: "Product added successfully!", insertedId: result.insertId });
@@ -34,14 +34,14 @@ const addProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
     try {
         const productId = req.params.id;
-        const { name, brand, product_description, price, stock_qty } = req.body;
+        const { name, category, product_description, price, stock_qty } = req.body;
         
         const sql = `
             UPDATE Products 
-            SET name=?, brand=?, product_description=?, price=?, stock_qty=? 
+            SET name=?, category=?, product_description=?, price=?, stock_qty=? 
             WHERE id=?
         `;
-        const values = [name, brand, product_description, price, stock_qty, productId];
+        const values = [name, category, product_description, price, stock_qty, productId];
 
         const [result] = await db.query(sql, values);
         
