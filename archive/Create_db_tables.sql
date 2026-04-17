@@ -11,7 +11,7 @@ CREATE TABLE Users (
 CREATE TABLE Products (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    brand VARCHAR(50),
+    category ENUM('misc', 'lubricant', 'tyres') NOT NULL DEFAULT 'misc',
     price DECIMAL(10,2) NOT NULL,
     stock_qty INT NOT NULL DEFAULT 0,
 	product_description TEXT              -- NEW: Description added here

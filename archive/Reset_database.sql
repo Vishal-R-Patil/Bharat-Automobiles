@@ -11,7 +11,3 @@ TRUNCATE TABLE Supply_Deliveries;
 TRUNCATE TABLE Products;
 
 SET FOREIGN_KEY_CHECKS = 1;
-
--- Alter brand to category
-ALTER TABLE Products
-MODIFY COLUMN category ENUM('misc', 'lubricant', 'tyres') NOT NULL DEFAULT 'misc';
