@@ -137,11 +137,6 @@ npm run dev
 - Import schema (tables: Users, Products, Transactions, Transaction_Items, Supply_Deliveries, Supply_Items)
 - Ensure `category` column in Products uses ENUM:
 
-```sql
-ALTER TABLE Products
-MODIFY COLUMN category ENUM('misc','lubricant','tyres') NOT NULL;
-```
-
 ---
 
 ### 5. Run the App
