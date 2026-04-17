@@ -72,7 +72,7 @@ const startDailyReportJob = () => {
                 SELECT 
                     SUM(final_amount) as total,
                     COUNT(*) as transactions
-                FROM transactions
+                FROM Transactions
                 WHERE DATE(sale_date) = CURDATE()
             `);
 
