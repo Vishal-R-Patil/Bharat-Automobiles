@@ -54,7 +54,7 @@ const sendDailyReport = async (total, count) =>
     doc.fontSize(12).text(`Date: ${formattedDate}`);
     doc.moveDown();
 
-    doc.text(`Total Sales: ₹${Number(total).toLocaleString('en-IN')}`);
+    doc.text(`Total Sales: Rs.${Number(total).toLocaleString('en-IN')}`);
     doc.text(`Transactions: ${count}`);
     doc.moveDown();
 
@@ -67,9 +67,11 @@ const sendDailyReport = async (total, count) =>
 // for testing '*/1 * * * *' (every minute) change to '0 21 * * *' for 9PM daily
 const startDailyReportJob = () =>
 {
-    cron.schedule('0 21 * * *', async () =>
+    const schedule = '0 21 * * *'; // 9 PM daily
+    const scheduleTest = '*/1 * * * *'; // every minute for testing
+    cron.schedule(schedule, async () =>
     {
-        console.log("⏰ Running Daily Sales Report...");
+        console.log("⏰ Running Daily Sales Report... Schedule:", schedule);
 
         try
         {
