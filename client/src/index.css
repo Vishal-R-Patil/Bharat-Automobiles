@@ -285,9 +285,10 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
 .text-warning { color: var(--warning); }
 .text-primary { color: var(--primary); }
 .bg-highlight {
-  background-color: #bef3e8;
+  background-color: var(--secondary);
   color: var(--text-main);
 }
+
 
 /* Dark mode override for grouped headers */
 .dark .bg-highlight {

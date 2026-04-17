@@ -8,6 +8,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// import email services
+const { startDailyReportJob } = require('./utils/emailService');
+startDailyReportJob(); // Start the daily report cron job at 9PM
+
 // Import your perfectly organized routes
 const productRoutes = require('./routes/productRoutes');
 // user routes
