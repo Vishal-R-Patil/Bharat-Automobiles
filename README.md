@@ -32,6 +32,7 @@ It features a public-facing storefront for customers and a highly secure, role-b
 
 - **Role-Based Access Control (RBAC):** Secure login routing dividing access between 'Owner' and 'Developer'.
 - **Stateless Authentication:** Powered by `bcrypt` password hashing and `jsonwebtoken` (JWT) stored safely in the client.
+- **Session Expiry Warning System:** Non-blocking UI banner warns users 5 minutes before session expiry with dismiss option for better UX.
 
 ### 📦 Inventory & Supply Ledger
 
@@ -48,18 +49,20 @@ It features a public-facing storefront for customers and a highly secure, role-b
 - **Mobile-Safe Printing:** Uses snapshot-based print data to avoid ₹0 total issue on mobile browsers.
 - **Improved Receipt UI:** Enhanced readability with bold product names and optimized thermal layout.
 - **Indian Currency Formatting:** All monetary values displayed using Indian numbering format (₹1,00,000) for better readability.
+- **Accurate Timestamp Handling:** Ensures billing, sales history, and printed receipts all display consistent IST time across devices and environments.
 
 ### 📈 Sales History
 
 - **Grouped Sales Analytics:** Transactions grouped by day with total daily revenue summaries and time-wise breakdown.
 - **Duplicate Receipt Printing:** Instantly reprint past bills with improved thermal formatting.
+- **Timezone-Safe Grouping:** Sales grouped by day using consistent IST parsing to avoid midnight edge-case errors.
 
 ---
 
 ### 📧 Automated Reporting
 
-- **Daily Email Reports:** Automatically sends daily sales summary at scheduled time using `node-cron` and `nodemailer`.
-- **PDF Report Generation:** Generates and emails professional PDF reports containing total sales, transaction count, and timestamps.
+- **Daily Email Reports (IST Accurate):** Uses `node-cron` with explicit `Asia/Kolkata` timezone to ensure reports are sent at correct local time in both cloud and local environments.
+- **PDF Report Generation (Correct Time Formatting):** Generates PDFs with IST-correct timestamps using `toLocaleTimeString` with timezone and displays clean `hh:mm` format.
 
 ---
 
@@ -71,13 +74,17 @@ It features a public-facing storefront for customers and a highly secure, role-b
 - **Database Reliability:** Faced downtime issues with managed database services and understood the importance of choosing stable/free-tier providers.
 - **UI Consistency & Design System:** Built a reusable CSS variable-based design system with dark/light mode support for consistent UI across pages.
 - **Real-world System Thinking:** Designed the app not just as a project, but as a real POS system handling inventory, billing, reporting, and customer-facing pages.
+- **Timezone Consistency Across Environments:** Solved discrepancies between localhost (IST) and cloud (UTC) by explicitly controlling timezone at backend (DB session) and frontend parsing using `+05:30` offset.
+- **Cron Debugging in Production:** Learned that invalid cron expressions and missing timezone configs can crash `node-cron` with `Invalid time value` errors.
+- **Date Parsing Pitfalls in JavaScript:** Understood that `new Date()` behaves differently across environments and fixed it using ISO formatting with explicit offsets.
+- **Robust Frontend Rendering:** Fixed React key warnings and sorting issues by avoiding formatted date strings and using raw timestamps.
 
 ---
 
 ## 🛠️ Tech Stack
 
 - **Frontend:** React.js (Vite), Axios, React Router DOM, Custom CSS Design System (CSS Variables), Dark Mode Theming.
-- **Backend:** Node.js, Express.js.
+- **Backend:** Node.js, Express.js. Includes `node-cron` for scheduling and `nodemailer` for automated email delivery.
 - **Database:** MySQL (using `mysql2` driver with connection pooling for raw, high-performance SQL queries).
 - **Hosting:** \* Frontend & Backend API hosted on **Render**.
   - Managed MySQL Database hosted on **Aiven Cloud**.
