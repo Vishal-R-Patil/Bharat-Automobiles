@@ -57,8 +57,14 @@ const sendDailyReport = async (total, count) =>
     doc.text(`Total Sales: Rs.${Number(total).toLocaleString('en-IN')}`);
     doc.text(`Transactions: ${count}`);
     doc.moveDown();
-
-    doc.text(`Generated at: ${today.toLocaleString('en-IN')}`);
+    //ist time
+    const istTime = new Date().toLocaleTimeString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
+    doc.text(`Generated at: ${istTime}`);
 
     doc.end();
 };
@@ -67,7 +73,7 @@ const sendDailyReport = async (total, count) =>
 // for testing '*/1 * * * *' (every minute) change to '0 21 * * *' for 9PM daily
 const startDailyReportJob = () =>
 {
-    const schedule = '20 14 * * *'; // 9 PM daily
+    const schedule = '20 25 * * *'; // 9 PM daily
     const scheduleTest = '*/1 * * * *'; // every minute for testing
     cron.schedule(schedule, async () =>
     {
@@ -94,9 +100,9 @@ const startDailyReportJob = () =>
             console.error("❌ Error sending report:", err);
         }
     },
-    {
-        timezone:'Asia/Kolkata'
-    },
+        {
+            timezone: 'Asia/Kolkata'
+        },
     );
 };
 
