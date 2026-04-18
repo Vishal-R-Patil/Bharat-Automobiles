@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import Billing from './pages/Billing';
 import Home from './pages/Home'
 import './index.css';
+
 // THE FRONTEND BOUNCER
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');

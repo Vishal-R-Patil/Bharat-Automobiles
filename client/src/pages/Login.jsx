@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api';
+import { startSessionManager } from '../utils/sessionManager';
 
 function Login() {
     const [username, setUsername] = useState('');
@@ -14,6 +15,11 @@ function Login() {
         try {
             const response = await API.post('/users/login', { username, password });
             localStorage.setItem('token', response.data.token);
+            // 6hr expiry
+            const expiry = Date.now() + 6* 60*60 * 1000;
+            localStorage.setItem('expiry', expiry);
+            //start session
+            startSessionManager();
             localStorage.setItem('role', response.data.role);
             navigate('/dashboard'); 
         } catch (error) {

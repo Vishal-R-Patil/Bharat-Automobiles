@@ -19,4 +19,23 @@ API.interceptors.request.use((req) => {
     return req;
 });
 
+//3. auto logout 
+// 3. Handle expired sessions globally
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Remove expired token
+      localStorage.removeItem('token');
+
+      // Optional: show message
+      alert('Session expired. Please login again.');
+
+      // Redirect to login
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default API;

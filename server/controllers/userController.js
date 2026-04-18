@@ -53,7 +53,7 @@ const loginUser = async (req, res) => {
         const token = jwt.sign(
             { id: user.id, role: user.role }, 
             process.env.JWT_SECRET, 
-            { expiresIn: '24h' } // Badge expires in 24 hours
+            { expiresIn: '6h' } // Badge expires in 24 hours
         );
 
         res.status(200).json({ 
