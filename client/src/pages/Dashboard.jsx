@@ -457,7 +457,7 @@ function Dashboard() {
                                             <button onClick={() => window.print()} className="btn btn-primary">🖨️ Reprint Bill</button>
                                         </div>
 
-                                        <h3 className="border-bottom pb-2">Sale Details | Date: {new Date(selectedSale.sale_date).toLocaleDateString('en-IN')}</h3>
+                                        <h3 className="border-bottom pb-2">Sale Details | Date: {new Date(selectedSale.sale_date.replace(' ', 'T')).toLocaleDateString('en-IN')}</h3>
                                         
                                         <div className="highlight-box flex-gap mb-3">
                                             <span><strong>Subtotal:</strong> ₹{selectedSale.sub_total}</span>
@@ -505,14 +505,14 @@ function Dashboard() {
                                                 <tbody>
                                                     {(() => {
                                                         const groupedSales = salesList.reduce((acc, sale) => {
-                                                            const dateKey = new Date(sale.sale_date).toLocaleDateString('en-IN', { dateStyle: 'medium' });
+                                                            const dateKey = new Date(sale.sale_date.replace(' ', 'T')).toLocaleDateString('en-IN', { dateStyle: 'medium' });
                                                             if (!acc[dateKey]) acc[dateKey] = [];
                                                             acc[dateKey].push(sale);
                                                             return acc;
                                                         }, {});
 
                                                         return Object.entries(groupedSales)
-                                                            .sort((a, b) => new Date(b[0]) - new Date(a[0]))
+                                                            .sort((a, b) => new Date(b[1][0].sale_date.replace(' ', 'T')) - new Date(a[1][0].sale_date.replace(' ', 'T')))
                                                             .map(([date, sales]) => {
                                                                 const totalForDay = sales.reduce((sum, s) => sum + Number(s.final_amount), 0);
 
@@ -527,7 +527,7 @@ function Dashboard() {
                                                                         {sales.map(sale => (
                                                                             <tr key={sale.id}>
                                                                                 <td className="text-muted">
-                                                                                    {new Date(sale.sale_date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                                                                                    {new Date(sale.sale_date.replace(' ', 'T')).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                                                                                 </td>
                                                                                 <td>₹{Number(sale.sub_total).toLocaleString('en-IN')}</td>
                                                                                 <td className="text-danger">₹{Number(sale.discount_amount).toLocaleString('en-IN')}</td>
@@ -573,8 +573,8 @@ function Dashboard() {
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '11px' }}>
-            <span>Date:{new Date(selectedSale.sale_date).toLocaleDateString('en-IN')}</span>
-            <span>Time:{new Date(selectedSale.sale_date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
+            <span>Date:{new Date(selectedSale.sale_date.replace(' ', 'T')).toLocaleDateString('en-IN')}</span>
+            <span>Time:{new Date(selectedSale.sale_date.replace(' ', 'T')).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
         </div>
 
         <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '10px', fontSize: '11px' }}>

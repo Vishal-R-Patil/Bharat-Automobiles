@@ -234,8 +234,8 @@ function Billing() {
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '11px' }}>
-                    <span>Date:{new Date().toLocaleDateString('en-IN')}</span>
-                    <span>Time: {new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
+                    <span>Date:{new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</span>
+                    <span>Time: {new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
 
                 <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '10px', fontSize: '11px' }}>
