@@ -14,11 +14,19 @@ This application modernizes physical retail business by replacing traditional bo
 
 It features a public-facing storefront for customers and a highly secure, role-based "Back Office" dashboard for the owner. It is engineered to handle complex supply deliveries, real-time inventory deductions, and hardware-native 80mm thermal receipt printing.
 
+---
+
+## 🌐 Live Demo
+
+🔗 https://bharat-automobiles.onrender.com
+
+---
+
 ## ✨ Key Features
 
 ### 🏢 Public Storefront
 
-- Responsive landing page detailing the shop's history, location (Siddappa Circle, Haveri), and authorized dealership status (HP, Servo, Gulf).
+- **Modern Public Landing Page:** Responsive home page with business overview, Kannada/English language toggle, dark/light theme support, embedded Google Maps location, and direct call-to-action buttons (Call Now, Open Maps).
 
 ### 🔐 Security & Auth
 
@@ -39,16 +47,36 @@ It features a public-facing storefront for customers and a highly secure, role-b
 - **Robust Stock Validation:** Aggregates duplicate products in cart before validation to prevent negative inventory issues.
 - **Mobile-Safe Printing:** Uses snapshot-based print data to avoid ₹0 total issue on mobile browsers.
 - **Improved Receipt UI:** Enhanced readability with bold product names and optimized thermal layout.
+- **Indian Currency Formatting:** All monetary values displayed using Indian numbering format (₹1,00,000) for better readability.
 
 ### 📈 Sales History
 
-- Filter and view past transactions, review exact discounts applied, and instantly reprint duplicate receipts.
+- **Grouped Sales Analytics:** Transactions grouped by day with total daily revenue summaries and time-wise breakdown.
+- **Duplicate Receipt Printing:** Instantly reprint past bills with improved thermal formatting.
+
+---
+
+### 📧 Automated Reporting
+
+- **Daily Email Reports:** Automatically sends daily sales summary at scheduled time using `node-cron` and `nodemailer`.
+- **PDF Report Generation:** Generates and emails professional PDF reports containing total sales, transaction count, and timestamps.
+
+---
+
+## 🧠 Challenges & Learnings
+
+- **Handling Race Conditions in Inventory:** Implemented SQL transactions with `FOR UPDATE` locking to prevent overselling and negative stock.
+- **Mobile Print Issues:** Resolved asynchronous rendering issues in mobile browsers by using snapshot-based state for printing instead of live React state.
+- **Cron Jobs in Cloud Environments:** Learned that in-app schedulers (`node-cron`) may fail on free hosting due to sleeping instances, and explored external schedulers as alternatives.
+- **Database Reliability:** Faced downtime issues with managed database services and understood the importance of choosing stable/free-tier providers.
+- **UI Consistency & Design System:** Built a reusable CSS variable-based design system with dark/light mode support for consistent UI across pages.
+- **Real-world System Thinking:** Designed the app not just as a project, but as a real POS system handling inventory, billing, reporting, and customer-facing pages.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** React.js (Vite), Axios, React Router DOM, Custom CSS Design System (CSS Variables).
+- **Frontend:** React.js (Vite), Axios, React Router DOM, Custom CSS Design System (CSS Variables), Dark Mode Theming.
 - **Backend:** Node.js, Express.js.
 - **Database:** MySQL (using `mysql2` driver with connection pooling for raw, high-performance SQL queries).
 - **Hosting:** \* Frontend & Backend API hosted on **Render**.
@@ -100,6 +128,9 @@ DB_USER=your_mysql_user
 DB_PASSWORD=your_mysql_password
 DB_NAME=your_database_name
 JWT_SECRET=your_secret_key
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_app_password
+REPORT_RECEIVER=recipient_email@gmail.com
 ```
 
 Start backend:
@@ -135,7 +166,6 @@ npm run dev
 
 - Create MySQL database
 - Import schema (tables: Users, Products, Transactions, Transaction_Items, Supply_Deliveries, Supply_Items)
-- Ensure `category` column in Products uses ENUM:
 
 ---
 

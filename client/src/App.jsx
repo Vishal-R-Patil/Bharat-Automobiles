@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Billing from './pages/Billing';
+import Home from './pages/Home'
 import './index.css';
 // THE FRONTEND BOUNCER
 const ProtectedRoute = ({ children }) => {
@@ -14,6 +15,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path ="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         
         {/* Wrap the Dashboard in our new Bouncer */}
