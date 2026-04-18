@@ -14,7 +14,6 @@ const registerUser = async (req, res) => {
         if (existingUsers.length > 0) {
             return res.status(400).json({ message: "Username already exists!" });
         }
-
         // 🔒 The Magic: Hash the password before saving!
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
