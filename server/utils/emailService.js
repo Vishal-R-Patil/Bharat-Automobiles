@@ -17,6 +17,7 @@ const sendDailyReport = async (total, count) =>
 {
     const today = new Date();
     const formattedDate = today.toLocaleDateString('en-IN', {
+        timeZone: 'Asia/Kolkata',
         day: 'numeric',
         month: 'long',
         year: 'numeric'
@@ -88,7 +89,8 @@ const handleSendReport = async (req, res) => {
                 SUM(final_amount) as total,
                 COUNT(*) as transactions
             FROM Transactions
-            WHERE DATE(sale_date) = CURDATE()
+            WHERE DATE(CONVERT_TZ(sale_date, '+00:00', '+05:30')) = 
+                  DATE(CONVERT_TZ(NOW(), '+00:00', '+05:30'))
         `);
 
         const total = rows[0].total || 0;
