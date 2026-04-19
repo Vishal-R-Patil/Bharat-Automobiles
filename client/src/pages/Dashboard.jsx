@@ -23,8 +23,13 @@ function Dashboard() {
     // 2. SORTING STATE & LOGIC
     // ==========================================
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+    const [searchTerm, setSearchTerm] = useState('');
 
-    const sortedProducts = [...products].sort((a, b) => {
+    const filteredProducts = products.filter(p =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const sortedProducts = [...filteredProducts].sort((a, b) => {
         if (!sortConfig.key) return 0;
         let aValue = a[sortConfig.key];
         let bValue = b[sortConfig.key];
@@ -262,6 +267,19 @@ function Dashboard() {
                             <div className="card">
                                 <div className="flex-between mb-3">
                                     <h2 className="m-0">Current Stock</h2>
+                                    <input
+                                        type="text"
+                                        placeholder="Search product..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="input-field"
+                                        style={{ maxWidth: '250px' }}
+                                    />
+                                    {searchTerm && (
+                                        <span className="text-muted text-sm" style={{ marginLeft: '10px' }}>
+                                            🔍 Showing results for "{searchTerm}"
+                                        </span>
+                                    )}
                                     {!isAddingNew && (
                                         <button onClick={() => setIsAddingNew(true)} className="btn btn-primary">
                                             + Quick Add Product

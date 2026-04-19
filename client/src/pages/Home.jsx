@@ -8,6 +8,19 @@ function Home() {
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem('theme') === 'dark';
   });
+  const [showScrollHint, setShowScrollHint] = useState(true);
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setShowScrollHint(false);
+      } else {
+        setShowScrollHint(true);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     if (darkMode) {
@@ -65,6 +78,16 @@ function Home() {
           <h1>{t.title}</h1>
           <p>{t.subtitle}</p>
         </div>
+
+        {showScrollHint && (
+          <div
+            className="scroll-indicator"
+            onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
+          >
+            <span className="scroll-text">Scroll Down</span>
+            <div className="arrow-down">⬇</div>
+          </div>
+        )}
 
         {/* About */}
         <div className="card">

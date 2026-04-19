@@ -73,37 +73,35 @@ const sendDailyReport = async (total, count) =>
 // for testing '*/1 * * * *' (every minute) change to '0 21 * * *' for 9PM daily
 const startDailyReportJob = () =>
 {
-    const schedule = '0 21 * * *'; // 9 PM daily
-    const scheduleTest = '*/1 * * * *'; // every minute for testing
-    cron.schedule(schedule, async () =>
-    {
-        console.log("⏰ Running Daily Sales Report... Schedule:", schedule);
-
-        try
-        {
-            const [rows] = await db.query(`
-                SELECT 
-                    SUM(final_amount) as total,
-                    COUNT(*) as transactions
-                FROM Transactions
-                WHERE DATE(sale_date) = CURDATE()
-            `);
-
-            const total = rows[0].total || 0;
-            const count = rows[0].transactions || 0;
-
-            await sendDailyReport(total, count);
-
-            console.log("✅ Daily report email sent");
-        } catch (err)
-        {
-            console.error("❌ Error sending report:", err);
-        }
-    },
-        {
-            timezone: 'Asia/Kolkata'
-        },
-    );
+    console.log("External cron mode enabled. Waiting for /api/send-report trigger");
 };
 
-module.exports = { startDailyReportJob };
+const handleSendReport = async (req, res) => {
+    try {
+        // Optional security check
+        if (req.query.key !== process.env.CRON_SECRET) {
+            return res.status(403).send(`Unauthorized.${process.env.CRON_SECRET}`);
+        }
+
+        const [rows] = await db.query(`
+            SELECT 
+                SUM(final_amount) as total,
+                COUNT(*) as transactions
+            FROM Transactions
+            WHERE DATE(sale_date) = CURDATE()
+        `);
+
+        const total = rows[0].total || 0;
+        const count = rows[0].transactions || 0;
+
+        await sendDailyReport(total, count);
+
+        console.log("✅ Report sent via external cron");
+        res.send("Report sent successfully");
+    } catch (err) {
+        console.error("❌ External cron error:", err);
+        res.status(500).send("Error sending report");
+    }
+};
+
+module.exports = { startDailyReportJob, handleSendReport };
