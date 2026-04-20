@@ -61,7 +61,8 @@ It features a public-facing storefront for customers and a highly secure, role-b
 
 ### 📧 Automated Reporting
 
-- **Daily Email Reports (IST Accurate):** Uses `node-cron` with explicit `Asia/Kolkata` timezone to ensure reports are sent at correct local time in both cloud and local environments.
+- **Daily Email Reports (External Cron, IST Accurate):** Uses an external scheduler (cron-job.org) to trigger `GET /api/send-report` with `Asia/Kolkata` timezone, ensuring reliable execution independent of server uptime.
+- **Secure Trigger Endpoint:** Protected route `GET /api/send-report?key=CRON_SECRET` to prevent unauthorized access to report generation.
 - **PDF Report Generation (Correct Time Formatting):** Generates PDFs with IST-correct timestamps using `toLocaleTimeString` with timezone and displays clean `hh:mm` format.
 
 ---
@@ -70,7 +71,7 @@ It features a public-facing storefront for customers and a highly secure, role-b
 
 - **Handling Race Conditions in Inventory:** Implemented SQL transactions with `FOR UPDATE` locking to prevent overselling and negative stock.
 - **Mobile Print Issues:** Resolved asynchronous rendering issues in mobile browsers by using snapshot-based state for printing instead of live React state.
-- **Cron Jobs in Cloud Environments:** Learned that in-app schedulers (`node-cron`) may fail on free hosting due to sleeping instances, and explored external schedulers as alternatives.
+- **Cron Jobs in Cloud Environments:** Identified limitations of in-app schedulers (`node-cron`) on free hosting (sleeping instances) and migrated to external cron (cron-job.org) for reliable, uptime-independent execution.
 - **Database Reliability:** Faced downtime issues with managed database services and understood the importance of choosing stable/free-tier providers.
 - **UI Consistency & Design System:** Built a reusable CSS variable-based design system with dark/light mode support for consistent UI across pages.
 - **Real-world System Thinking:** Designed the app not just as a project, but as a real POS system handling inventory, billing, reporting, and customer-facing pages.
@@ -84,7 +85,7 @@ It features a public-facing storefront for customers and a highly secure, role-b
 ## 🛠️ Tech Stack
 
 - **Frontend:** React.js (Vite), Axios, React Router DOM, Custom CSS Design System (CSS Variables), Dark Mode Theming.
-- **Backend:** Node.js, Express.js. Includes `node-cron` for scheduling and `nodemailer` for automated email delivery.
+- **Backend:** Node.js, Express.js. Uses `nodemailer` for automated email delivery and external schedulers (cron-job.org) for reliable job execution.
 - **Database:** MySQL (using `mysql2` driver with connection pooling for raw, high-performance SQL queries).
 - **Hosting:** \* Frontend & Backend API hosted on **Render**.
   - Managed MySQL Database hosted on **Aiven Cloud**.
@@ -138,6 +139,7 @@ JWT_SECRET=your_secret_key
 EMAIL_USER=your_email@gmail.com
 EMAIL_PASS=your_app_password
 REPORT_RECEIVER=recipient_email@gmail.com
+CRON_SECRET=your_secret_key_for_external_cron
 ```
 
 Start backend:
@@ -194,3 +196,26 @@ Login with seeded credentials or manually insert a user.
 5. Check sales history
 
 ---
+
+## ⏱️ External Cron Setup (Production)
+
+1. Create a secure endpoint (already available):
+   ```
+   GET /api/send-report?key=CRON_SECRET
+   ```
+2. Verify locally and on deployed app (should send email and return success JSON).
+3. Configure job on cron-job.org:
+   - URL: `https://<your-domain>/api/send-report?key=CRON_SECRET`
+   - Method: GET
+   - Timezone: Asia/Kolkata
+   - Schedule: 21:00 (daily)
+4. Optional: Use UptimeRobot to ping `/health` every 5 minutes if running other in-app jobs.
+
+## 🧪 Troubleshooting
+
+- If no email is received, check server logs for "External cron" messages.
+- Ensure `CRON_SECRET`, `EMAIL_USER`, and `EMAIL_PASS` are set correctly in environment variables.
+- Verify database date handling uses IST (`CONVERT_TZ`) to avoid midnight boundary issues.
+- Test endpoint manually via browser or curl before relying on scheduler.
+
+- Do not modify anything else.
