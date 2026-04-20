@@ -81,7 +81,7 @@ const handleSendReport = async (req, res) => {
     try {
         // Optional security check
         if (req.query.key !== process.env.CRON_SECRET) {
-            return res.status(403).send(`Unauthorized.${process.env.CRON_SECRET}`);
+            return res.status(403).send("Unauthorized");
         }
 
         const [rows] = await db.query(`
@@ -96,10 +96,13 @@ const handleSendReport = async (req, res) => {
         const total = rows[0].total || 0;
         const count = rows[0].transactions || 0;
 
-        await sendDailyReport(total, count);
+        // respond immediately to avoid timeouts
+        res.send("Report triggered");
 
-        console.log("✅ Report sent via external cron");
-        res.send("Report sent successfully");
+        // run in background
+        sendDailyReport(total, count)
+            .then(() => console.log("✅ Report sent via external cron"))
+            .catch(err => console.error("❌ Background report failed:", err));
     } catch (err) {
         console.error("❌ External cron error:", err);
         res.status(500).send("Error sending report");
