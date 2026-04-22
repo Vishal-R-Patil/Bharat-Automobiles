@@ -4,6 +4,8 @@ import API from "../api";
 import InventoryTab from "../components/dashboard/InventoryTab";
 import SalesHistoryTab from "../components/dashboard/SalesHistoryTab";
 import PrintReceipt from "../components/dashboard/PrintReceipt";
+import SupplyTab from '../components/dashboard/SupplyTab';
+import SupplyHistoryTab from '../components/dashboard/SupplyHistoryTab';
 
 function Dashboard() {
   const [activeTab, setActiveTab] = useState("inventory");
@@ -466,248 +468,29 @@ function Dashboard() {
 
             {/* TAB 2: ADVANCED SUPPLY FORM */}
             {activeTab === "addStock" && (
-              <div className="card">
-                <h2 className="border-bottom pb-2">Receive New Delivery</h2>
-                <form onSubmit={handleSupplySubmit}>
-                  <div className="form-grid highlight-box mb-4">
-                    <div>
-                      <label>Supplier</label>
-                      <input
-                        type="text"
-                        required
-                        value={supplyInfo.supplierName}
-                        onChange={(e) =>
-                          setSupplyInfo({
-                            ...supplyInfo,
-                            supplierName: e.target.value,
-                          })
-                        }
-                        className="input-field"
-                      />
-                    </div>
-                    <div>
-                      <label>Invoice #</label>
-                      <input
-                        type="text"
-                        required
-                        value={supplyInfo.invoiceNumber}
-                        onChange={(e) =>
-                          setSupplyInfo({
-                            ...supplyInfo,
-                            invoiceNumber: e.target.value,
-                          })
-                        }
-                        className="input-field"
-                      />
-                    </div>
-                    <div>
-                      <label>Total Cost (₹)</label>
-                      <input
-                        type="number"
-                        required
-                        value={supplyInfo.totalCost}
-                        onChange={(e) =>
-                          setSupplyInfo({
-                            ...supplyInfo,
-                            totalCost: e.target.value,
-                          })
-                        }
-                        className="input-field"
-                      />
-                    </div>
-                  </div>
-
-                  <h3 className="mb-3">Products in this Delivery</h3>
-                  <datalist id="product-suggestions">
-                    {products.map((p) => (
-                      <option key={p.id} value={p.name} />
-                    ))}
-                  </datalist>
-
-                  {supplyItems.map((item, index) => (
-                    <div key={index} className="form-row mb-3">
-                      <input
-                        type="text"
-                        list="product-suggestions"
-                        placeholder="Type Product Name"
-                        required
-                        value={item.name}
-                        onChange={(e) =>
-                          handleNameChange(index, e.target.value)
-                        }
-                        className="input-field"
-                      />
-                      <input
-                        type="number"
-                        placeholder="Wholesale (₹)"
-                        required
-                        value={item.wholesale_price}
-                        onChange={(e) =>
-                          handleItemChange(
-                            index,
-                            "wholesale_price",
-                            e.target.value,
-                          )
-                        }
-                        className="input-field"
-                      />
-                      <input
-                        type="number"
-                        placeholder="Qty Arrived"
-                        required
-                        value={item.quantity}
-                        onChange={(e) =>
-                          handleItemChange(index, "quantity", e.target.value)
-                        }
-                        className="input-field"
-                      />
-                      {supplyItems.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeLineItem(index)}
-                          className="btn btn-icon"
-                        >
-                          <TrashIcon />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-
-                  <div className="flex-between mt-4 border-top pt-3">
-                    <button
-                      type="button"
-                      onClick={addLineItem}
-                      className="btn btn-outline"
-                    >
-                      + Add Another Product
-                    </button>
-                    <button type="submit" className="btn btn-primary">
-                      Process Delivery
-                    </button>
-                  </div>
-                </form>
-              </div>
+              <SupplyTab
+                supplyInfo={supplyInfo}
+                setSupplyInfo={setSupplyInfo}
+                supplyItems={supplyItems}
+                setSupplyItems={setSupplyItems}
+                products={products}
+                handleNameChange={handleNameChange}
+                handleItemChange={handleItemChange}
+                addLineItem={addLineItem}
+                removeLineItem={removeLineItem}
+                handleSupplySubmit={handleSupplySubmit}
+              />
             )}
 
             {/* TAB 3: SUPPLY HISTORY */}
             {activeTab === "history" && (
-              <div className="card">
-                {selectedDelivery ? (
-                  <div>
-                    <button
-                      onClick={() => setSelectedDelivery(null)}
-                      className="btn btn-outline mb-3"
-                    >
-                      ← Back to History List
-                    </button>
-                    <h3 className="border-bottom pb-2">
-                      Items for Invoice: {selectedDelivery.invoice_number}
-                    </h3>
-                    <p>
-                      <strong>Supplier:</strong>{" "}
-                      {selectedDelivery.supplier_name} | <strong> Date:</strong>{" "}
-                      {new Date(
-                        selectedDelivery.delivery_date,
-                      ).toLocaleDateString("en-IN")}{" "}
-                      | <strong> Total Cost:</strong> ₹
-                      {selectedDelivery.total_cost}
-                    </p>
-
-                    <div className="table-wrapper mt-3">
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>Product Name</th>
-                            <th>Category</th>
-                            <th>Wholesale Price</th>
-                            <th>Retail Price</th>
-                            <th>Quantity Added</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {detailItems.map((item, idx) => (
-                            <tr key={idx}>
-                              <td className="font-bold">
-                                {item.Product_name || item.product_name}
-                              </td>
-                              <td>{item.category}</td>
-                              <td>
-                                ₹
-                                {Number(
-                                  item.Wholesale_price || item.wholesale_price,
-                                ).toLocaleString("en-IN")}
-                              </td>
-                              <td>
-                                ₹
-                                {Number(
-                                  item.Retail_price || item.retail_price,
-                                ).toLocaleString("en-IN")}
-                              </td>
-                              <td className="font-bold text-success">
-                                +{item.Quantity_added || item.quantity_added}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    <h2 className="border-bottom pb-2">Recent Deliveries</h2>
-                    <div className="table-wrapper">
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>Delivery ID</th>
-                            <th>Date</th>
-                            <th>Supplier Name</th>
-                            <th>Invoice #</th>
-                            <th>Total Cost</th>
-                            <th className="text-center">Action</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {historyList.map((h) => (
-                            <tr key={h.id}>
-                              <td className="text-muted">#{h.id}</td>
-                              <td className="text-muted">
-                                {new Date(h.delivery_date).toLocaleString(
-                                  "en-IN",
-                                  { dateStyle: "medium", timeStyle: "short" },
-                                )}
-                              </td>
-                              <td className="font-bold">{h.supplier_name}</td>
-                              <td>{h.invoice_number}</td>
-                              <td>
-                                ₹{Number(h.total_cost).toLocaleString("en-IN")}
-                              </td>
-                              <td className="text-center">
-                                <button
-                                  onClick={() => fetchDeliveryDetails(h)}
-                                  className="btn btn-outline"
-                                >
-                                  View Items
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                          {historyList.length === 0 && (
-                            <tr>
-                              <td
-                                colSpan="6"
-                                className="text-center text-muted p-4"
-                              >
-                                No delivery history found.
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <SupplyHistoryTab
+                historyList={historyList}
+                selectedDelivery={selectedDelivery}
+                setSelectedDelivery={setSelectedDelivery}
+                detailItems={detailItems}
+                fetchDeliveryDetails={fetchDeliveryDetails}
+              />
             )}
 
             {/* TAB 4: SALES HISTORY 📈 */}
