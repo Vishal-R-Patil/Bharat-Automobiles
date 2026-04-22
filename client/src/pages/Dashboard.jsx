@@ -4,8 +4,8 @@ import API from "../api";
 import InventoryTab from "../components/dashboard/InventoryTab";
 import SalesHistoryTab from "../components/dashboard/SalesHistoryTab";
 import PrintReceipt from "../components/dashboard/PrintReceipt";
-import SupplyTab from '../components/dashboard/SupplyTab';
-import SupplyHistoryTab from '../components/dashboard/SupplyHistoryTab';
+import SupplyTab from "../components/dashboard/SupplyTab";
+import SupplyHistoryTab from "../components/dashboard/SupplyHistoryTab";
 
 function Dashboard() {
   const [activeTab, setActiveTab] = useState("inventory");
@@ -511,8 +511,8 @@ function Dashboard() {
       {/* HIDDEN PRINT RECEIPT (Triggers when reprinting a bill) */}
       {/* ========================================== */}
       {selectedSale && (
-  <PrintReceipt selectedSale={selectedSale} saleItems={saleItems} />
-)}
+        <PrintReceipt selectedSale={selectedSale} saleItems={saleItems} />
+      )}
     </div>
   );
 }

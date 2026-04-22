@@ -340,6 +340,88 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
   }
 }
 
+/* ================= RESPONSIVE IMPROVEMENTS ================= */
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 20px 10px;
+  }
+
+  .card {
+    padding: 18px;
+  }
+
+  .btn {
+    padding: 10px 14px;
+    font-size: 0.9em;
+  }
+
+  .form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .tab-container {
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .tab-btn {
+    flex-shrink: 0;
+    padding: 10px 16px;
+    font-size: 0.9em;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .dashboard-header .btn-backToDashboard {
+    position: static;
+  }
+
+  .dashboard-header .header-actions {
+    position: static;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  th, td {
+    padding: 8px;
+    font-size: 0.75em;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  /* Override for table buttons (Billing POS etc.) */
+  .data-table .btn {
+    width: auto;
+    padding: 6px 10px;
+    font-size: 0.75em;
+  }
+
+  .flex-between {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .flex-gap {
+    flex-direction: column;
+  }
+}
+
 @keyframes scaleIn {
   from { transform: scale(0.95); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
@@ -383,6 +465,13 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
   font-weight: 600;
   cursor: pointer;
   transition: all 0.25s ease;
+}
+
+@media (max-width: 768px) {
+  .dashboard-header .btn-backToDashboard {
+    position: static;
+    margin-bottom: 8px;
+  }
 }
 
 .dashboard-header .btn-backToDashboard:hover {
