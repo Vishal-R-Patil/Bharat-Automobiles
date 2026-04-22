@@ -20,7 +20,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         
         {/* Wrap the Dashboard in our new Bouncer */}
-        <Route 
+        <Route
           path="/dashboard" 
           element={
             <ProtectedRoute>

@@ -79,6 +79,15 @@ function Home() {
           <p>{t.subtitle}</p>
         </div>
 
+        
+
+        {/* About */}
+        <div className="card">
+          <h2>About Us</h2>
+          <p>{t.about}</p>
+          <p>{t.contact}</p>
+        </div>
+
         {showScrollHint && (
           <div
             className="scroll-indicator"
@@ -88,13 +97,6 @@ function Home() {
             <div className="arrow-down">⬇</div>
           </div>
         )}
-
-        {/* About */}
-        <div className="card">
-          <h2>About Us</h2>
-          <p>{t.about}</p>
-          <p>{t.contact}</p>
-        </div>
 
       </div>
 
@@ -115,7 +117,7 @@ function Home() {
       {/* Contact Footer */}
       <div className="home-footer">
         <p>📍 Siddappa Circle, P.B. Road, Haveri</p>
-        <p>📞 99807 56208</p>
+        <p>📞99807 56208 | 98449 29729 | 96860 55206 </p>
         <div className="footer-actions">
           <a href="tel:9980756208" className="btn btn-success">Call Now</a>
           <a href="https://www.google.com/maps?q=Siddappa%20Circle%20P.B.%20Road%20Haveri" target="_blank" rel="noreferrer" className="btn btn-outline">Open Maps</a>
