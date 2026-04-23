@@ -1,43 +1,36 @@
+/* src/index.css */
 :root {
-  /* Core Colors */
-  --primary: #0284c7;       /* Modern, professional oceanic blue */
-  --primary-hover: #0369a1;
-  --secondary: #f1f5f9;     /* Slate-100 */
-  --bg-color: #f8fafc;      /* Slate-50 - softer than pure white */
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --secondary: #eef2ff;
+  --bg-color: #f5f7fb;
   --surface: #ffffff;
-  
-  /* Typography */
-  --text-main: #0f172a;     /* Slate-900 */
-  --text-muted: #64748b;    /* Slate-500 */
-  
-  /* Status & Borders */
-  --border: #e2e8f0;        /* Slate-200 */
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border: #e5e7eb;
   --danger: #ef4444;
-  --success: #10b981;
+  --success: #22c55e;
   --warning: #f59e0b;
 
-  /* Geometry */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
 
-  /* Modern, subtle shadows (Tailwind inspired) */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
-  --shadow-focus: 0 0 0 3px rgba(2, 132, 199, 0.15);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 6px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 24px rgba(0,0,0,0.12);
 }
 
 .dark {
-  --bg-color: #0b0f19;      /* Deep modern slate, not pitch black */
-  --surface: #111827;
-  --text-main: #f8fafc;
+  --bg-color: #0f172a;
+  --surface: #1e293b;
+  --text-main: #f1f5f9;
   --text-muted: #94a3b8;
-  --border: #1f2937;
-  --secondary: #1f2937;
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3);
-  --shadow-focus: 0 0 0 3px rgba(2, 132, 199, 0.3);
+  --border: #334155;
+
+  --secondary: #1e293b;
 }
+
 body {
   background-color: var(--bg-color);
   color: var(--text-main);
@@ -645,7 +638,7 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
 .hero {
   text-align: center;
   padding: 60px 20px;
-  background: linear-gradient(135deg, var(--primary),var(--primary-hover));
+  background: linear-gradient(135deg, var(--primary), #6366f1);
   color: white;
   border-radius: 12px;
   margin-bottom: 30px;
@@ -658,7 +651,7 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
 }
 
 .dark .hero {
-  background: linear-gradient(135deg, var(--primary),var(--primary-hover));
+  background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
 }
 
 .home-container .card {
