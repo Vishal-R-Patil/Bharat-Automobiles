@@ -226,8 +226,8 @@ function Dashboard() {
   };
 
   const handleSaveEdit = async (id) => {
-    setLoading(true);
     if (!window.confirm("Are you sure you want to save these changes?")) return;
+    setLoading(true);
     try {
       await API.put(`/products/${id}`, editForm);
       setEditingId(null);
@@ -240,13 +240,13 @@ function Dashboard() {
   };
 
   const handleDeleteClick = async (id) => {
-    setLoading(true);
     if (
       !window.confirm(
         "⚠️ WARNING: Are you sure you want to delete this product? This action cannot be undone.",
       )
     )
       return;
+    setLoading(true);
     try {
       await API.delete(`/products/${id}`);
       fetchInventory();
@@ -458,6 +458,7 @@ function Dashboard() {
                 setNewInlineProduct={setNewInlineProduct}
                 handleQuickAddSave={handleQuickAddSave}
                 editingId={editingId}
+                setEditingId={setEditingId}
                 editForm={editForm}
                 setEditForm={setEditForm}
                 handleSaveEdit={handleSaveEdit}

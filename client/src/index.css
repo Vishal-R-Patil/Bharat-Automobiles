@@ -760,3 +760,63 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
   padding: 12px;
   width: 100%;
 }
+
+
+/* ================= STOCK BADGE (MODERN FINTECH STYLE) ================= */
+
+.stock-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  color: #fff;
+  letter-spacing: 0.3px;
+
+  transition: all 0.2s ease;
+}
+/* 🟢 HIGH STOCK (muted green) */
+.stock-badge.high {
+  background: #16a34a; /* was brighter */
+  box-shadow:
+    0 3px 8px rgba(22, 163, 74, 0.18),
+    0 0 0 2px rgba(22, 163, 74, 0.10);
+}
+
+/* 🟡 MEDIUM STOCK (soft amber) */
+.stock-badge.medium {
+  background: #eab308; /* softer yellow */
+  color: #1f2937;
+  box-shadow:
+    0 3px 8px rgba(234, 179, 8, 0.18),
+    0 0 0 2px rgba(234, 179, 8, 0.10);
+}
+
+/* 🔴 LOW STOCK (muted red) */
+.stock-badge.low {
+  background: #dc2626;
+  box-shadow:
+    0 3px 8px rgba(220, 38, 38, 0.18),
+    0 0 0 2px rgba(220, 38, 38, 0.10);
+}
+
+/* Hover effect (subtle, premium) */
+.stock-badge:hover {
+  transform: scale(1.08);
+}
+.stock-badge.low {
+  animation: pulseLow 1.5s infinite;
+}
+
+@keyframes pulseLow {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 15px rgba(228, 47, 47, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
