@@ -1,3 +1,4 @@
+
 :root {
   /* Core Colors */
   --primary: #0284c7;       /* Modern, professional oceanic blue */
@@ -38,6 +39,10 @@
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3);
   --shadow-focus: 0 0 0 3px rgba(2, 132, 199, 0.3);
 }
+
+
+
+
 body {
   background-color: var(--bg-color);
   color: var(--text-main);
@@ -753,6 +758,21 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
   color: #ffffff;
 }
 
+/* Ensure status colors are preserved in dark mode */
+.dark .text-success {
+  color: #22c55e; /* brighter green for dark bg */
+}
+
+.dark .text-danger {
+  color: #ef4444; /* slightly brighter red */
+}
+
+.dark .text-warning {
+  color: #facc15; /* improve visibility */
+}
+
+
+
 
 /* ===== LOGIN BUTTON ===== */
 
@@ -762,61 +782,24 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
 }
 
 
-/* ================= STOCK BADGE (MODERN FINTECH STYLE) ================= */
+/* ================= STOCK BADGE (TEXT-ONLY STATUS STYLE) ================= */
 
 .stock-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  min-width: 30px;
-  height: 30px;
-  padding: 0 6px;
-
-  border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 1rem;
   font-weight: 600;
-
-  color: #fff;
-  letter-spacing: 0.3px;
-
-  transition: all 0.2s ease;
 }
-/* 🟢 HIGH STOCK (muted green) */
+
+/* 🟢 HIGH STOCK */
 .stock-badge.high {
-  background: #16a34a; /* was brighter */
-  box-shadow:
-    0 3px 8px rgba(22, 163, 74, 0.18),
-    0 0 0 2px rgba(22, 163, 74, 0.10);
+  color: var(--success);
 }
 
-/* 🟡 MEDIUM STOCK (soft amber) */
+/* 🟡 MEDIUM STOCK */
 .stock-badge.medium {
-  background: #eab308; /* softer yellow */
-  color: #1f2937;
-  box-shadow:
-    0 3px 8px rgba(234, 179, 8, 0.18),
-    0 0 0 2px rgba(234, 179, 8, 0.10);
+  color: var(--warning);
 }
 
-/* 🔴 LOW STOCK (muted red) */
+/* 🔴 LOW STOCK */
 .stock-badge.low {
-  background: #dc2626;
-  box-shadow:
-    0 3px 8px rgba(220, 38, 38, 0.18),
-    0 0 0 2px rgba(220, 38, 38, 0.10);
-}
-
-/* Hover effect (subtle, premium) */
-.stock-badge:hover {
-  transform: scale(1.08);
-}
-.stock-badge.low {
-  animation: pulseLow 1.5s infinite;
-}
-
-@keyframes pulseLow {
-  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-  70% { box-shadow: 0 0 0 15px rgba(228, 47, 47, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  color: var(--danger);
 }

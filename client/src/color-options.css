@@ -1,0 +1,88 @@
+
+/* ------------------------------------------ */
+
+:root {
+  --primary: #0891b2;
+  --primary-hover: #0e7490;
+  --secondary: #ecfeff;
+  --bg-color: #f0fdfd;
+  --surface: #ffffff;
+
+  --text-main: #052e36;
+  --text-muted: #5e7a84;
+
+  --border: #cffafe;
+  --danger: #dc2626;
+  --success: #16a34a;
+  --warning: #d97706;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05),
+               0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05),
+               0 4px 6px -4px rgb(0 0 0 / 0.05);
+  --shadow-focus: 0 0 0 3px rgba(8, 145, 178, 0.2);
+}
+
+.dark {
+  --bg-color: #020d10;
+  --surface: #071b20;
+  --text-main: #ecfeff;
+  --text-muted: #6ea8b5;
+  --border: #0c3641;
+  --secondary: #0b2b33;
+  --primary: #22d3ee;
+  --primary-hover: #06b6d4;
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+  --shadow-focus: 0 0 0 3px rgba(34, 211, 238, 0.25);
+}
+
+
+
+/* ------------------------------------------ */
+
+:root {
+  /* Core Colors */
+  --primary: #0284c7;       /* Modern, professional oceanic blue */
+  --primary-hover: #0369a1;
+  --secondary: #f1f5f9;     /* Slate-100 */
+  --bg-color: #f8fafc;      /* Slate-50 - softer than pure white */
+  --surface: #ffffff;
+  
+  /* Typography */
+  --text-main: #0f172a;     /* Slate-900 */
+  --text-muted: #64748b;    /* Slate-500 */
+  
+  /* Status & Borders */
+  --border: #e2e8f0;        /* Slate-200 */
+  --danger: #ef4444;
+  --success: #10b981;
+  --warning: #f59e0b;
+
+  /* Geometry */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* Modern, subtle shadows (Tailwind inspired) */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+  --shadow-focus: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+.dark {
+  --bg-color: #0b0f19;      /* Deep modern slate, not pitch black */
+  --surface: #111827;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border: #1f2937;
+  --secondary: #1f2937;
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+  --shadow-focus: 0 0 0 3px rgba(2, 132, 199, 0.3);
+}
+
