@@ -11,6 +11,7 @@ function Dashboard() {
   const [activeTab, setActiveTab] = useState("inventory");
   const [products, setProducts] = useState([]);
   const navigate = useNavigate();
+  const role = localStorage.getItem("role");
   const [darkMode, setDarkMode] = useState(
     () => localStorage.getItem("theme") === "dark",
   );
@@ -389,7 +390,7 @@ function Dashboard() {
         <header className="dashboard-header">
           <div>
             <h1>
-              <u>Bharat Automobiles Owner Dashboard </u>
+              <u>Bharat Automobiles {role} Dashboard </u>
             </h1>
           </div>
           <div className="header-actions">
@@ -414,12 +415,15 @@ function Dashboard() {
           >
             📦 View Inventory
           </button>
-          <button
+
+          {(role == 'Owner' || role=='Developer') && 
+          (<button
             onClick={() => setActiveTab("addStock")}
             className={`tab-btn ${activeTab === "addStock" ? "active" : ""}`}
           >
             🚚 Receive Supply
-          </button>
+          </button>)}
+          
           <button
             onClick={() => setActiveTab("history")}
             className={`tab-btn ${activeTab === "history" ? "active" : ""}`}
@@ -447,6 +451,7 @@ function Dashboard() {
             {/* TAB 1: INVENTORY TABLE */}
             {activeTab === "inventory" && (
               <InventoryTab
+                role={role}
                 sortedProducts={sortedProducts}
                 sortConfig={sortConfig}
                 requestSort={requestSort}

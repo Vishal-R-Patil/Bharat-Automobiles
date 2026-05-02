@@ -1,4 +1,3 @@
-import { TrashIcon } from "lucide-react";
 import React from "react";
 
 function InventoryTab(props) {
@@ -30,6 +29,7 @@ function InventoryTab(props) {
   );
 
   const {
+    role,
     sortedProducts,
     sortConfig,
     requestSort,
@@ -68,7 +68,12 @@ function InventoryTab(props) {
         )}
         {!isAddingNew && (
           <button
-            onClick={() => setIsAddingNew(true)}
+            onClick={() =>{
+              if (role !== 'Owner' && role !== 'Developer') {
+                        alert('Kindly Login from Owner account(Ramesh_Patil)  to add products');
+                        return;
+                }
+              setIsAddingNew(true)}}
             className="btn btn-primary"
           >
             + Quick Add Product
@@ -193,7 +198,13 @@ function InventoryTab(props) {
                 </td>
                 <td className="text-center flex-gap">
                   <button
-                    onClick={handleQuickAddSave}
+                    onClick={() => {
+                      if (role !== 'Owner' && role !== 'Developer') {
+                        alert('Kindly Login from Owner account(Ramesh_Patil)  to add products');
+                        return;
+                      }
+                      handleQuickAddSave();
+                    }}
                     className="btn btn-success"
                   >
                     Save
@@ -267,6 +278,8 @@ function InventoryTab(props) {
                     </td>
                     <td className="text-center flex-gap">
                       <button
+                      disabled={role!='Owner'&& role!='Developer'}
+                      title="Only owner can edit"
                         type="button"
                         onClick={() => handleSaveEdit(product.id)}
                         className="btn btn-success"
@@ -306,14 +319,26 @@ function InventoryTab(props) {
                     <td className="text-center">
                       <button
                         type="button"
-                        onClick={() => handleEditClick(product)}
+                        onClick={() => {
+                          if (role !== 'Owner' && role !== 'Developer') {
+                            alert('Kindly Login from Owner account(Ramesh_Patil)  to edit products');
+                            return;
+                          }
+                          handleEditClick(product);
+                        }}
                         className="btn-icon"
                       >
                         <EditIcon />
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleDeleteClick(product.id)}
+                        onClick={() => {
+                          if (role !== 'Owner' && role !== 'Developer') {
+                            alert('Kindly Login from Owner account(Ramesh_Patil)  to delete products');
+                            return;
+                          }
+                          handleDeleteClick(product.id);
+                        }}
                         className="btn-icon"
                       >
                         {" "}
