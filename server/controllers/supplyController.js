@@ -8,10 +8,16 @@ const receiveSupply = async (req, res) => {
     try {
         await connection.beginTransaction();
 
+        // Compute total cost securely in backend
+        const totalCost = items.reduce(
+            (sum, item) => sum + (Number(item.wholesale_price || 0) * Number(item.quantity || 0)),
+            0
+        );
+
         // 1. Insert Master Record (Supply Delivery)
         const [deliveryResult] = await connection.query(
-            'INSERT INTO Supply_Deliveries (supplier_name, invoice_number, total_cost) VALUES (?, ?, ?)',
-            [supplyInfo.supplierName, supplyInfo.invoiceNumber, supplyInfo.totalCost]
+            'INSERT INTO Supply_Deliveries (supplier_name, invoice_number, issued_date, total_cost) VALUES (?, ?, ?, ?)',
+            [supplyInfo.supplierName, supplyInfo.invoiceNumber, supplyInfo.issued_date, totalCost]
         );
         const deliveryId = deliveryResult.insertId;
 
@@ -64,7 +70,7 @@ const getSupplyHistory = async (req, res) => {
     try {
         // Fetches the master records, ordered by newest first
         const sql = `
-            SELECT id, supplier_name, invoice_number, delivery_date, total_cost 
+            SELECT id, supplier_name, invoice_number, delivery_date, issued_date, total_cost 
             FROM Supply_Deliveries 
             ORDER BY id DESC
         `;

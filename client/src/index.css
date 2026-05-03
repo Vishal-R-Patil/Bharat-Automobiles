@@ -803,3 +803,22 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
 .stock-badge.low {
   color: var(--danger);
 }
+
+.form-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.form-row .input-field:nth-child(2) {
+  max-width: 150px; /* wholesale */
+}
+
+.form-row .input-field:nth-child(3) {
+  max-width: 120px; /* quantity */
+}
+
+.btn-icon {
+  flex-shrink: 0;
+}

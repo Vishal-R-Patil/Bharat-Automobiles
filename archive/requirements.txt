@@ -1,0 +1,8 @@
+Recieve supply
+
+add date manually with default today
+Automatic  total calculation
+----------------------------------
+
+Add Suppliers table 
+Suppliers recommened in recieve supply deliveries

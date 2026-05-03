@@ -24,7 +24,9 @@ function SupplyHistoryTab({
 
         <p>
           <strong>Supplier:</strong> {selectedDelivery.supplier_name} |{" "}
-          <strong>Date:</strong>{" "}
+          <strong>Issued Date:</strong>{" "}
+          {new Date(selectedDelivery.issued_date).toLocaleDateString("en-IN")} |{" "}
+          <strong>Recieved Date:</strong>{" "}
           {new Date(selectedDelivery.delivery_date).toLocaleDateString("en-IN")} |{" "}
           <strong>Total Cost:</strong> ₹{selectedDelivery.total_cost}
         </p>
@@ -74,7 +76,8 @@ function SupplyHistoryTab({
           <thead>
             <tr>
               <th>Delivery ID</th>
-              <th>Date</th>
+              <th>Issued Date</th>
+              <th>Delivery Date</th>
               <th>Supplier Name</th>
               <th>Invoice #</th>
               <th>Total Cost</th>
@@ -85,6 +88,9 @@ function SupplyHistoryTab({
             {historyList.map((h) => (
               <tr key={h.id}>
                 <td className="text-muted">#{h.id}</td>
+                <td className="text-muted">
+                  {new Date(h.issued_date).toLocaleDateString("en-IN",{dateStyle:"medium"})}
+                </td>
                 <td className="text-muted">
                   {new Date(h.delivery_date).toLocaleString("en-IN", {
                     dateStyle: "medium",
