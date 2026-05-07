@@ -19,6 +19,8 @@ const supplyRoutes = require('./routes/supplyRoutes');
 const billingRoutes = require('./routes/billingRoutes');
 // report routes
 const reportRoutes = require('./routes/reportRoutes');
+// supplier routes
+const supplierRoutes= require('./routes/supplierRoutes');
 
 // Tell Express: "Any URL that starts with /api/products should use the productRoutes file"
 app.use('/api/products', productRoutes);
@@ -30,6 +32,8 @@ app.use('/api/supply', supplyRoutes);
 app.use('/api/billing', billingRoutes);
 // report api
 app.use('/api', reportRoutes);
+// supplier routes
+app.use("/api/suppliers", supplierRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

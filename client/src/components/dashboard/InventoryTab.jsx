@@ -315,7 +315,7 @@ function InventoryTab(props) {
                       >
                         {product.stock_qty}
                       </span>
-                    </td>{" "}
+                    </td>
                     <td className="text-center">
                       <button
                         type="button"

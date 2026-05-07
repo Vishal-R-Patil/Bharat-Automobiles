@@ -822,3 +822,30 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
 .btn-icon {
   flex-shrink: 0;
 }
+
+/* supplier  */
+
+.supplier-item {
+  padding: 14px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.supplier-item:active {
+  background: var(--secondary);
+}
+
+.transaction-item {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+@media (max-width: 768px) {
+  .supplier-item {
+    font-size: 16px;
+  }
+
+  .transaction-item {
+    font-size: 14px;
+  }
+}

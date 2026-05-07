@@ -3,6 +3,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Billing from './pages/Billing';
 import Home from './pages/Home'
+import SupplyBook from './pages/SupplyBook';
 import './index.css';
 
 // THE FRONTEND BOUNCER
@@ -33,6 +34,7 @@ function App() {
             <Billing />
           </ProtectedRoute>
         } />
+        <Route path="/supplybook" element={<SupplyBook />} />
         
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>

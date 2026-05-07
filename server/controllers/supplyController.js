@@ -14,10 +14,26 @@ const receiveSupply = async (req, res) => {
             0
         );
 
+        // STRICT supplier validation
+        const [existingSupplier] = await connection.query(
+            'SELECT id, name FROM Suppliers WHERE LOWER(name) = LOWER(?)',
+            [supplyInfo.supplierName.trim()]
+        );
+
+        // Supplier must already exist
+        if (existingSupplier.length === 0) {
+            throw new Error(
+                `Supplier "${supplyInfo.supplierName}" does not exist. Please create it first in SupplyBook.`
+            );
+        }
+
+        const supplierId = existingSupplier[0].id;
+        const supplierName = existingSupplier[0].name;
+
         // 1. Insert Master Record (Supply Delivery)
         const [deliveryResult] = await connection.query(
-            'INSERT INTO Supply_Deliveries (supplier_name, invoice_number, issued_date, total_cost) VALUES (?, ?, ?, ?)',
-            [supplyInfo.supplierName, supplyInfo.invoiceNumber, supplyInfo.issued_date, totalCost]
+            'INSERT INTO Supply_Deliveries (supplier_name, supplier_id, invoice_number, issued_date, total_cost) VALUES (?, ?, ?, ?, ?)',
+            [supplierName, supplierId, supplyInfo.invoiceNumber, supplyInfo.issued_date, totalCost]
         );
         const deliveryId = deliveryResult.insertId;
 
@@ -70,9 +86,10 @@ const getSupplyHistory = async (req, res) => {
     try {
         // Fetches the master records, ordered by newest first
         const sql = `
-            SELECT id, supplier_name, invoice_number, delivery_date, issued_date, total_cost 
-            FROM Supply_Deliveries 
-            ORDER BY id DESC
+            SELECT sd.id, s.name AS supplier_name, sd.invoice_number, sd.delivery_date, sd.issued_date, sd.total_cost
+            FROM Supply_Deliveries sd
+            LEFT JOIN Suppliers s ON sd.supplier_id = s.id
+            ORDER BY sd.id DESC
         `;
         const [rows] = await db.query(sql);
         res.status(200).json(rows);
@@ -109,5 +126,5 @@ const getSupplyItems = async (req, res) => {
     }
 };
 
-module.exports = { receiveSupply, getSupplyHistory, getSupplyItems };
 
+module.exports = { receiveSupply, getSupplyHistory, getSupplyItems };

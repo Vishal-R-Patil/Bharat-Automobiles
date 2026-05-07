@@ -7,9 +7,11 @@ import PrintReceipt from "../components/dashboard/PrintReceipt";
 import SupplyTab from "../components/dashboard/SupplyTab";
 import SupplyHistoryTab from "../components/dashboard/SupplyHistoryTab";
 
+
 function Dashboard() {
   const [activeTab, setActiveTab] = useState("inventory");
   const [products, setProducts] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
   const navigate = useNavigate();
   const role = localStorage.getItem("role");
   const [darkMode, setDarkMode] = useState(
@@ -87,6 +89,7 @@ function Dashboard() {
     },
   ]);
 
+
   // ==========================================
   // 4. SUPPLY HISTORY STATE
   // ==========================================
@@ -103,6 +106,7 @@ function Dashboard() {
 
   useEffect(() => {
     fetchInventory();
+    fetchSuppliers();
   }, []);
 
   useEffect(() => {
@@ -121,6 +125,15 @@ function Dashboard() {
   }, [darkMode]);
 
   // --- API FETCH FUNCTIONS ---
+
+  const fetchSuppliers = async () => {
+    try {
+      const response = await API.get("/suppliers");
+      setSuppliers(Array.isArray(response.data) ? response.data : []);
+    } catch (err) {
+      console.error("Error fetching suppliers:", err);
+    }
+  };
   const fetchInventory = async () => {
     setLoading(true);
     try {
@@ -436,6 +449,13 @@ function Dashboard() {
           >
             📈 Sales History
           </button>
+
+          <button
+           onClick={() => navigate("/supplybook")}
+            className="btn btn-success ms-auto"
+          >
+             Supply Book
+          </button>
           <button
             onClick={() => navigate("/billing")}
             className="btn btn-success ms-auto"
@@ -480,6 +500,7 @@ function Dashboard() {
                 supplyItems={supplyItems}
                 setSupplyItems={setSupplyItems}
                 products={products}
+                suppliers={suppliers}
                 handleNameChange={handleNameChange}
                 handleItemChange={handleItemChange}
                 addLineItem={addLineItem}

@@ -4,7 +4,7 @@ CREATE TABLE Users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    role ENUM('Owner', 'Developer') NOT NULL
+    role ENUM('Owner', 'Developer','Employee') NOT NULL
 );
 
 -- 2. Create Products Table (Independent)
@@ -63,4 +63,27 @@ CREATE TABLE Supply_Items (
     -- Links this item to your master inventory list
     FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE RESTRICT
 );
+
+
+-- Adding suppliers(khatabook ) functionality
+
+CREATE TABLE Suppliers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    gst_no varchar(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE Supply_Deliveries
+ADD COLUMN supplier_id INT;
+
+
+ALTER TABLE Supply_Deliveries
+ADD CONSTRAINT fk_supplier
+FOREIGN KEY (supplier_id)
+REFERENCES Suppliers(id)
+ON DELETE CASCADE;
+
+INSERT INTO Suppliers (name)
+SELECT DISTINCT supplier_name FROM Supply_Deliveries;
 

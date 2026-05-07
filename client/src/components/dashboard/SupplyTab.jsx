@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useMemo } from "react";
 
 function SupplyTab({
   supplyInfo,
   setSupplyInfo,
   supplyItems,
   products,
+  suppliers,
   handleNameChange,
   handleItemChange,
   addLineItem,
@@ -26,16 +27,47 @@ function SupplyTab({
       />
     </svg>
   );
+  const safeSuppliers = Array.isArray(suppliers) ? suppliers : [];
+  const safeProducts = Array.isArray(products) ? products : [];
+
+  const filteredSuppliers = useMemo(() => {
+    if (!supplyInfo.supplierName) return safeSuppliers;
+
+    return safeSuppliers.filter((s) =>
+      s.name
+        .toLowerCase()
+        .includes(supplyInfo.supplierName.toLowerCase())
+    );
+  }, [safeSuppliers, supplyInfo.supplierName]);
+
   return (
     <div className="card">
       <h2 className="border-bottom pb-2">Receive New Delivery</h2>
 
-      <form onSubmit={handleSupplySubmit}>
+      <form
+        onSubmit={(e) => {
+          const validSupplier = safeSuppliers.some(
+            (s) =>
+              s.name.toLowerCase() ===
+              supplyInfo.supplierName.toLowerCase()
+          );
+
+          if (!validSupplier) {
+            e.preventDefault();
+            alert("Supplier does not exist. Please create it in SupplyBook.");
+            return;
+          }
+
+          handleSupplySubmit(e);
+        }}
+      >
         <div className="form-grid highlight-box mb-4">
           <div>
             <label>Supplier</label>
             <input
               type="text"
+              list="supplier-suggestions"
+              placeholder="Type Exact Supplier Name"
               required
               value={supplyInfo.supplierName}
               onChange={(e) =>
@@ -46,6 +78,17 @@ function SupplyTab({
               }
               className="input-field"
             />
+
+            {supplyInfo.supplierName &&
+              !safeSuppliers.some(
+                (s) =>
+                  s.name.toLowerCase() ===
+                  supplyInfo.supplierName.toLowerCase()
+              ) && (
+                <small className="text-danger">
+                  Supplier does not exist. Please create it in SupplyBook.
+                </small>
+              )}
           </div>
 
           <div>
@@ -91,10 +134,16 @@ function SupplyTab({
           </div>
         </div>
 
+        <datalist id="supplier-suggestions">
+          {filteredSuppliers.map((s) => (
+            <option key={s.id} value={s.name} />
+          ))}
+        </datalist>
+
         <h3 className="mb-3">Products in this Delivery</h3>
 
         <datalist id="product-suggestions">
-          {products.map((p) => (
+          {safeProducts.map((p) => (
             <option key={p.id} value={p.name} />
           ))}
         </datalist>
