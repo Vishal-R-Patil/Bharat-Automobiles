@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
 import ThemeToggle from "../components/ThemeToggle";
-import { TrashIcon } from "lucide-react";
+import { TrashIcon } from "../components/Icons";
 
 function SupplyBook() {
   const [suppliers, setSuppliers] = useState([]);
@@ -173,6 +173,7 @@ function SupplyBook() {
                 <p className="text-muted">{s.gst_no || "No GST"}</p>
               </div>
               <button
+              className="btn-icon"
                 type="button"
                 onClick={() => deleteSupplier(s.id)}
                 style={{ marginLeft: "10px" }}
