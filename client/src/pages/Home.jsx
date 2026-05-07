@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ThemeToggle from '../components/ThemeToggle';
 
 function Home() {
   const navigate = useNavigate();
   const [lang, setLang] = useState('en');
 
-  const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem('theme') === 'dark';
-  });
+ 
   const [showScrollHint, setShowScrollHint] = useState(true);
   useEffect(() => {
     const handleScroll = () => {
@@ -22,15 +21,6 @@ function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [darkMode]);
 
   const content = {
     en: {
@@ -62,13 +52,7 @@ function Home() {
           <div>
             <button onClick={() => setLang('en')} className="btn btn-outline">EN</button>
             <button onClick={() => setLang('kn')} className="btn btn-outline">ಕನ್ನಡ</button>
-            <button
-              onClick={() => setDarkMode(prev => !prev)}
-              className="theme-toggle"
-            >
-              <span className="icon sun">☀️</span>
-              <span className="icon moon">🌙</span>
-            </button>
+            <ThemeToggle/>
             <button onClick={() => navigate('/login')} className="btn btn-primary">Login</button>
           </div>
         </div>

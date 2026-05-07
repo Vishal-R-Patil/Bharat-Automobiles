@@ -6,6 +6,7 @@ import SalesHistoryTab from "../components/dashboard/SalesHistoryTab";
 import PrintReceipt from "../components/dashboard/PrintReceipt";
 import SupplyTab from "../components/dashboard/SupplyTab";
 import SupplyHistoryTab from "../components/dashboard/SupplyHistoryTab";
+import ThemeToggle from "../components/ThemeToggle";
 
 
 function Dashboard() {
@@ -14,9 +15,6 @@ function Dashboard() {
   const [suppliers, setSuppliers] = useState([]);
   const navigate = useNavigate();
   const role = localStorage.getItem("role");
-  const [darkMode, setDarkMode] = useState(
-    () => localStorage.getItem("theme") === "dark",
-  );
 
   // ==========================================
   // 1. EDIT & QUICK ADD STATE
@@ -114,15 +112,6 @@ function Dashboard() {
     if (activeTab === "salesHistory") fetchSalesHistory();
   }, [activeTab]);
 
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [darkMode]);
 
   // --- API FETCH FUNCTIONS ---
 
@@ -407,13 +396,7 @@ function Dashboard() {
             </h1>
           </div>
           <div className="header-actions">
-            <button
-              onClick={() => setDarkMode((prev) => !prev)}
-              className="theme-toggle"
-            >
-              <span className="icon sun">☀️</span>
-              <span className="icon moon">🌙</span>
-            </button>
+            <ThemeToggle/>
             <button onClick={handleLogout} className="btn btn-danger">
               Logout
             </button>
