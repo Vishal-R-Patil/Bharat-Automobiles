@@ -11,6 +11,7 @@ import { EditIcon,TrashIcon } from "../components/Icons";
 
 function Dashboard() {
   const [activeTab, setActiveTab] = useState("inventory");
+  const [isTabMenuOpen, setIsTabMenuOpen] = useState(false);
   const [products, setProducts] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const navigate = useNavigate();
@@ -210,7 +211,7 @@ function Dashboard() {
         product_description: "",
       });
       fetchInventory();
-    } catch (err) {
+    } catch {
       alert("Failed to quick-add product.");
     } finally {
       setLoading(false);
@@ -235,7 +236,7 @@ function Dashboard() {
       await API.put(`/products/${id}`, editForm);
       setEditingId(null);
       fetchInventory();
-    } catch (err) {
+    } catch {
       alert("Failed to update product.");
     } finally {
       setLoading(false);
@@ -253,7 +254,7 @@ function Dashboard() {
     try {
       await API.delete(`/products/${id}`);
       fetchInventory();
-    } catch (err) {
+    } catch {
       alert(
         "Failed to delete product. It may be linked to previous deliveries/sales.",
       );
@@ -337,6 +338,26 @@ function Dashboard() {
     }
   };
 
+  const canReceiveSupply = role === "Owner" || role === "Developer";
+  const dashboardTabs = [
+    { key: "inventory", label: "📦 View Inventory" },
+    ...(canReceiveSupply ? [{ key: "addStock", label: "🚚 Receive Supply" }] : []),
+    { key: "history", label: "📋 Supply Ledger" },
+    { key: "salesHistory", label: "📈 Sales History" },
+  ];
+  const activeTabLabel =
+    dashboardTabs.find((tab) => tab.key === activeTab)?.label || "Dashboard Menu";
+
+  const handleTabSelect = (tabKey) => {
+    setActiveTab(tabKey);
+    setIsTabMenuOpen(false);
+  };
+
+  const handleMenuNavigate = (path) => {
+    setIsTabMenuOpen(false);
+    navigate(path);
+  };
+
   
   // ==========================
   // InventoryTab component
@@ -377,47 +398,47 @@ function Dashboard() {
         </header>
 
         {/* NAVIGATION TABS */}
-        <div className="tab-container">
+        <div className={`tab-container ${isTabMenuOpen ? "menu-open" : ""}`}>
           <button
-            onClick={() => setActiveTab("inventory")}
-            className={`tab-btn ${activeTab === "inventory" ? "active" : ""}`}
+            type="button"
+            className="mobile-tab-toggle"
+            aria-expanded={isTabMenuOpen}
+            aria-controls="dashboard-tab-menu"
+            onClick={() => setIsTabMenuOpen((isOpen) => !isOpen)}
           >
-            📦 View Inventory
+            <span className="hamburger-icon" aria-hidden="true">☰</span>
+            <span>{activeTabLabel}</span>
           </button>
 
-          {(role == 'Owner' || role=='Developer') && 
-          (<button
-            onClick={() => setActiveTab("addStock")}
-            className={`tab-btn ${activeTab === "addStock" ? "active" : ""}`}
-          >
-            🚚 Receive Supply
-          </button>)}
-          
-          <button
-            onClick={() => setActiveTab("history")}
-            className={`tab-btn ${activeTab === "history" ? "active" : ""}`}
-          >
-            📋 Supply Ledger
-          </button>
-          <button
-            onClick={() => setActiveTab("salesHistory")}
-            className={`tab-btn ${activeTab === "salesHistory" ? "active" : ""}`}
-          >
-            📈 Sales History
-          </button>
+          <div className="tab-menu" id="dashboard-tab-menu">
+            {dashboardTabs.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => handleTabSelect(tab.key)}
+                className={`tab-btn ${activeTab === tab.key ? "active" : ""}`}
+              >
+                {tab.label}
+              </button>
+            ))}
 
-          <button
-           onClick={() => navigate("/supplybook")}
-            className="btn btn-success ms-auto"
-          >
-             Supply Book
-          </button>
-          <button
-            onClick={() => navigate("/billing")}
-            className="btn btn-success ms-auto"
-          >
-            🧾 Billing POS
-          </button>
+            {(canReceiveSupply) &&
+            (<button
+              type="button"
+              onClick={() => handleMenuNavigate("/supplybook")}
+              className="btn btn-success nav-action-btn nav-action-primary"
+            >
+              Supply Book
+            </button>)
+            }
+            <button
+              type="button"
+              onClick={() => handleMenuNavigate("/billing")}
+              className="btn btn-success nav-action-btn"
+            >
+              🧾 Billing POS
+            </button>
+          </div>
         </div>
 
         {loading ? (

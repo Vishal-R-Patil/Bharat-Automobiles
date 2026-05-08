@@ -1,20 +1,21 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowUpDown, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
 import ThemeToggle from "../components/ThemeToggle";
 import { TrashIcon } from "../components/Icons";
 
 function SupplyBook() {
+  const [activeTab, setActiveTab] = useState("view");
   const [suppliers, setSuppliers] = useState([]);
   const [selected, setSelected] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [newSupplier, setNewSupplier] = useState({ name: "", gst_no: "" });
+  const [supplierSearch, setSupplierSearch] = useState("");
+  const [sortMode, setSortMode] = useState("recent");
+  const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    fetchSuppliers();
-  }, []);
 
   const fetchSuppliers = async () => {
     try {
@@ -25,35 +26,58 @@ function SupplyBook() {
     }
   };
 
-  const addSupplier = async () => {
+  useEffect(() => {
+    let isMounted = true;
+
+    API.get("/suppliers")
+      .then((res) => {
+        if (isMounted) {
+          setSuppliers(Array.isArray(res.data) ? res.data : []);
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const addSupplier = async (e) => {
+    e.preventDefault();
     if (!newSupplier.name) return alert("Supplier name required");
     try {
       await API.post("/suppliers", newSupplier);
       setNewSupplier({ name: "", gst_no: "" });
       fetchSuppliers();
+      setActiveTab("view");
+      setIsSortMenuOpen(false);
     } catch (err) {
       console.error(err);
     }
   };
 
-  const deleteSupplier = async (id) => {
+  const deleteSupplier = async () => {
+    if (!selected) return;
     if (!window.confirm("Delete this supplier?")) return;
     try {
-      await API.delete(`/suppliers/${id}`);
+      await API.delete(`/suppliers/${selected.id}`);
+      setSelected(null);
+      setTransactions([]);
       fetchSuppliers();
     } catch (err) {
       console.error(err);
-       if (err.response?.data?.hasTransactions) {
-    alert(err.response.data.error);
-
-  } else {
-    alert("Failed to delete supplier");
-
-  }
+      if (err.response?.data?.hasTransactions) {
+        alert(err.response.data.error);
+      } else {
+        alert("Failed to delete supplier");
+      }
     }
   };
 
   const handleSelect = async (supplier) => {
+    setIsSortMenuOpen(false);
     setSelected(supplier);
     try {
       const res = await API.get(`/suppliers/${supplier.id}`);
@@ -63,36 +87,80 @@ function SupplyBook() {
     }
   };
 
+  const visibleSuppliers = useMemo(() => {
+    const search = supplierSearch.trim().toLowerCase();
+    const filteredSuppliers = suppliers.filter((supplier) => {
+      const name = supplier.name || "";
+      const gstNo = supplier.gst_no || "";
+      return (
+        name.toLowerCase().includes(search) ||
+        gstNo.toLowerCase().includes(search)
+      );
+    });
+
+    return [...filteredSuppliers].sort((a, b) => {
+      if (sortMode === "name") {
+        return (a.name || "").localeCompare(b.name || "");
+      }
+
+      const aInteraction =
+        new Date(a.last_interaction_at || 0).getTime() ||
+        Number(a.last_interaction_id || 0);
+      const bInteraction =
+        new Date(b.last_interaction_at || 0).getTime() ||
+        Number(b.last_interaction_id || 0);
+
+      if (bInteraction !== aInteraction) return bInteraction - aInteraction;
+      return (a.name || "").localeCompare(b.name || "");
+    });
+  }, [suppliers, supplierSearch, sortMode]);
+
+  const formatLastInteraction = (supplier) => {
+    if (!supplier.last_interaction_at) return "No activity yet";
+    return `Last supply: ${new Date(supplier.last_interaction_at).toLocaleDateString(
+      "en-IN",
+    )}`;
+  };
+
+  const handleSortSelect = (mode) => {
+    setSortMode(mode);
+    setIsSortMenuOpen(false);
+  };
+
   if (selected) {
     return (
       <div className="dashboard-container">
-        <div
-          className="dashboard-header"
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: "10px",
-            flexWrap: "wrap"
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <div className="supplybook-header">
+          <div className="supplybook-title-row">
             <button
-              className="btn btn-outline"
+              className="btn btn-outline supplybook-back-btn"
               onClick={() => navigate("/dashboard")}
             >
               ← Dashboard
             </button>
-            <h2 style={{ margin: 0 }}>Supply Book</h2>
+            <div className="supplybook-title-with-toggle">
+              <h2>Supply Book</h2>
+              <ThemeToggle />
+            </div>
           </div>
-
-          <ThemeToggle />
         </div>
 
         <div className="card">
-          <button onClick={() => setSelected(null)}>← Back</button>
+          <div className="flex-between mb-4">
+            <button className="btn btn-outline" onClick={() => setSelected(null)}>
+              ← Back
+            </button>
+            <button
+              className="btn btn-icon"
+              type="button"
+              onClick={deleteSupplier}
+            >
+              <TrashIcon />
+            </button>
+          </div>
 
-          <h3>{selected.name}</h3>
+          <h3 className="mb-2">{selected.name}</h3>
+          <p className="text-muted mb-4">GST no: {selected.gst_no || "No GST"}</p>
 
           {transactions.length === 0 ? (
             <p>No transactions found.</p>
@@ -115,73 +183,156 @@ function SupplyBook() {
 
   return (
     <div className="dashboard-container">
-      <div
-        className="dashboard-header"
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: "10px",
-          flexWrap: "wrap"
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+      <div className="supplybook-header">
+        <div className="supplybook-title-row">
           <button
-            className="btn btn-outline"
+            className="btn btn-outline supplybook-back-btn"
             onClick={() => navigate("/dashboard")}
           >
             ← Dashboard
           </button>
-          <h2 style={{ margin: 0 }}>Supply Book</h2>
+          <div className="supplybook-title-with-toggle">
+            <h2>Supply Book</h2>
+            <ThemeToggle />
+          </div>
         </div>
-
-        <ThemeToggle />
       </div>
 
       <div className="card">
-
-        <div style={{ marginBottom: "15px" }}>
-          <input
-            placeholder="Supplier Name"
-            value={newSupplier.name}
-            onChange={(e) => setNewSupplier({ ...newSupplier, name: e.target.value })}
-            className="input-field"
-          />
-          <input
-            placeholder="GST No"
-            value={newSupplier.gst_no}
-            onChange={(e) => setNewSupplier({ ...newSupplier, gst_no: e.target.value })}
-            className="input-field"
-          />
-          <button onClick={addSupplier} className="btn btn-primary">
+        <div className="supplybook-tabs mb-4">
+          <button
+            type="button"
+            onClick={() => setActiveTab("view")}
+            className={`tab-btn ${activeTab === "view" ? "active" : ""}`}
+          >
+            View Suppliers
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("add")}
+            className={`tab-btn ${activeTab === "add" ? "active" : ""}`}
+          >
             Add Supplier
           </button>
         </div>
 
-        {!Array.isArray(suppliers) || suppliers.length === 0 ? (
-          <p>No suppliers found.</p>
-        ) : (
-          
-          suppliers.map((s) => (
-            <div
-              key={s.id}
-              className="supplier-item"
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
-            >
-              <div onClick={() => handleSelect(s)} style={{ flex: 1 }}>
-                <strong>{s.name}</strong>
-                <p className="text-muted">{s.gst_no || "No GST"}</p>
-              </div>
+        {activeTab === "view" && (
+          <>
+            <div className="supplybook-list-header">
+              <h3>Suppliers</h3>
               <button
-              className="btn-icon"
                 type="button"
-                onClick={() => deleteSupplier(s.id)}
-                style={{ marginLeft: "10px" }}
+                className="btn btn-primary supplybook-add-fab"
+                onClick={() => setActiveTab("add")}
+                aria-label="Add supplier"
               >
-                <TrashIcon/>
+                <Plus size={22} strokeWidth={2.5} />
               </button>
             </div>
-          ))
+
+            <div className="supplybook-controls">
+              <input
+                className="input-field"
+                placeholder="Search suppliers"
+                value={supplierSearch}
+                onChange={(e) => setSupplierSearch(e.target.value)}
+              />
+              <div className="supplybook-sort-menu">
+                <button
+                  type="button"
+                  className="btn btn-outline supplybook-sort-btn"
+                  onClick={() => setIsSortMenuOpen((isOpen) => !isOpen)}
+                  aria-label="Sort suppliers"
+                  aria-expanded={isSortMenuOpen}
+                >
+                  <ArrowUpDown size={20} strokeWidth={2.2} aria-hidden="true" />
+                </button>
+                {isSortMenuOpen && (
+                  <div className="supplybook-sort-options">
+                    <button
+                      type="button"
+                      className={sortMode === "recent" ? "active" : ""}
+                      onClick={() => handleSortSelect("recent")}
+                    >
+                      Recent transaction
+                    </button>
+                    <button
+                      type="button"
+                      className={sortMode === "name" ? "active" : ""}
+                      onClick={() => handleSortSelect("name")}
+                    >
+                      Name A-Z
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {!Array.isArray(suppliers) || suppliers.length === 0 ? (
+              <p>No suppliers found.</p>
+            ) : visibleSuppliers.length === 0 ? (
+              <p>No suppliers match your search.</p>
+            ) : (
+              visibleSuppliers.map((s) => (
+                <div
+                  key={s.id}
+                  className="supplier-item"
+                  onClick={() => handleSelect(s)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") handleSelect(s);
+                  }}
+                >
+                  <strong>{s.name}</strong>
+                  <p className="text-muted">GST no: {s.gst_no || "No GST"}</p>
+                  <p className="text-muted">{formatLastInteraction(s)}</p>
+                </div>
+              ))
+            )}
+          </>
+        )}
+
+        {activeTab === "add" && (
+          <form onSubmit={addSupplier}>
+            <div className="supplybook-list-header mb-4">
+              <h3>Add Supplier</h3>
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => setActiveTab("view")}
+              >
+                View Suppliers
+              </button>
+            </div>
+            <div className="form-grid mb-4">
+              <div>
+                <label>Supplier Name</label>
+                <input
+                  placeholder="Supplier Name"
+                  value={newSupplier.name}
+                  onChange={(e) =>
+                    setNewSupplier({ ...newSupplier, name: e.target.value })
+                  }
+                  className="input-field"
+                />
+              </div>
+              <div>
+                <label>GST No</label>
+                <input
+                  placeholder="GST No"
+                  value={newSupplier.gst_no}
+                  onChange={(e) =>
+                    setNewSupplier({ ...newSupplier, gst_no: e.target.value })
+                  }
+                  className="input-field"
+                />
+              </div>
+            </div>
+            <button type="submit" className="btn btn-primary">
+              Add Supplier
+            </button>
+          </form>
         )}
       </div>
     </div>

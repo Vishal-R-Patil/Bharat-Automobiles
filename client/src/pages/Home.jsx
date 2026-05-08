@@ -49,7 +49,7 @@ function Home() {
         <div className="home-navbar">
           <h2>{t.title}</h2>
 
-          <div>
+          <div className="home-navbar-actions">
             <button onClick={() => setLang('en')} className="btn btn-outline">EN</button>
             <button onClick={() => setLang('kn')} className="btn btn-outline">ಕನ್ನಡ</button>
             <ThemeToggle/>

@@ -4,7 +4,16 @@ const db = require("../config/database");
 exports.getSuppliers = async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT id, name, gst_no FROM Suppliers ORDER BY name"
+      `SELECT
+        s.id,
+        s.name,
+        s.gst_no,
+        MAX(COALESCE(sd.issued_date, sd.delivery_date)) AS last_interaction_at,
+        MAX(sd.id) AS last_interaction_id
+       FROM Suppliers s
+       LEFT JOIN Supply_Deliveries sd ON sd.supplier_id = s.id
+       GROUP BY s.id, s.name, s.gst_no
+       ORDER BY last_interaction_at DESC, last_interaction_id DESC, s.name ASC`
     );
 
     res.json(rows);

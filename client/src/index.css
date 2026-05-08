@@ -74,11 +74,24 @@ h1, h2, h3 { color: var(--text-main); margin-top: 0; }
 }
 /* Tabs Container */
 .tab-container {
+  position: relative;
+  margin-bottom: 25px;
+  padding-bottom: 5px;
+}
+
+.tab-menu {
   display: flex;
   gap: 10px;
-  margin-bottom: 25px;
   overflow-x: auto;
-  padding-bottom: 5px;
+  white-space: nowrap;
+}
+
+.mobile-tab-toggle {
+  display: none;
+}
+
+.nav-action-primary {
+  margin-left: auto;
 }
 
 /* Tab Button Base */
@@ -152,6 +165,7 @@ h1, h2, h3 { color: var(--text-main); margin-top: 0; }
 
 /* Success */
 .btn-success {
+  flex-shrink: 0;
   background: linear-gradient(135deg, var(--success), #16a34a);
   color: white;
 }
@@ -378,14 +392,73 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
   }
 
   .tab-container {
-    overflow-x: auto;
-    white-space: nowrap;
+    padding-bottom: 0;
   }
 
-  .tab-btn {
-    flex-shrink: 0;
-    padding: 10px 16px;
+  .mobile-tab-toggle {
+    width: 100%;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--surface);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.95em;
+  }
+
+  .hamburger-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: var(--primary);
+    font-size: 1.35em;
+    line-height: 1;
+  }
+
+  .tab-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    z-index: 50;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    overflow: visible;
+    white-space: normal;
+    padding: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .tab-container.menu-open .tab-menu {
+    display: flex;
+  }
+
+  .tab-menu .tab-btn,
+  .tab-menu .nav-action-btn {
+    width: 100%;
+    min-height: 44px;
+    justify-content: flex-start;
+    padding: 10px 14px;
     font-size: 0.9em;
+    text-align: left;
+  }
+
+  .tab-menu .nav-action-btn,
+  .tab-menu .nav-action-primary {
+    margin-left: 0;
   }
 
   .dashboard-header {
@@ -840,6 +913,109 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
   border-bottom: 1px solid var(--border);
 }
 
+.supplybook-header {
+  margin-bottom: 20px;
+}
+
+.supplybook-title-row,
+.supplybook-title-with-toggle,
+.supplybook-tabs,
+.supplybook-list-header,
+.supplybook-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.supplybook-title-row,
+.supplybook-list-header {
+  justify-content: space-between;
+}
+
+.supplybook-title-row {
+  flex-wrap: nowrap;
+}
+
+.supplybook-title-with-toggle h2,
+.supplybook-list-header h3 {
+  margin: 0;
+}
+
+.supplybook-tabs {
+  flex-wrap: wrap;
+}
+
+.supplybook-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 46px;
+  margin: 14px 0 10px;
+}
+
+.supplybook-add-fab {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  flex-shrink: 0;
+  font-size: 1.6rem;
+  line-height: 1;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+}
+
+.supplybook-sort-menu {
+  position: relative;
+}
+
+.supplybook-sort-btn {
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  padding: 0;
+  font-size: 1.2rem;
+}
+
+.supplybook-sort-options {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  min-width: 190px;
+  padding: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.supplybook-sort-options button {
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  color: var(--text-main);
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 600;
+  text-align: left;
+}
+
+.supplybook-sort-options button:hover,
+.supplybook-sort-options button.active {
+  background: var(--secondary);
+  color: var(--primary);
+}
+
+.supplier-item p {
+  margin: 5px 0 0;
+}
+
+.supplier-item:hover {
+  background: var(--secondary);
+}
+
 @media (max-width: 768px) {
   .supplier-item {
     font-size: 16px;
@@ -847,5 +1023,129 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
 
   .transaction-item {
     font-size: 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .home-container {
+    padding: 16px;
+  }
+
+  .home-navbar {
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 12px;
+  }
+
+  .home-navbar h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    line-height: 1.25;
+  }
+
+  .home-navbar-actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .home-navbar-actions .btn {
+    width: auto;
+    flex: 1 1 auto;
+    min-width: 68px;
+    padding: 10px 12px;
+  }
+
+  .home-navbar-actions .theme-toggle {
+    flex: 0 0 40px;
+  }
+
+  .hero {
+    padding: 42px 16px;
+  }
+
+  .hero h1 {
+    font-size: 1.8rem;
+    line-height: 1.2;
+  }
+
+  .footer-actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .supplybook-title-row {
+    align-items: center;
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .supplybook-title-with-toggle {
+    flex: 1;
+    min-width: 0;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .supplybook-title-with-toggle h2 {
+    font-size: 1.1rem;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .supplybook-back-btn {
+    width: auto;
+    flex: 0 0 auto;
+    padding: 10px 11px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+
+  .supplybook-title-with-toggle .theme-toggle {
+    flex: 0 0 40px;
+  }
+
+  .supplybook-tabs {
+    display: none;
+  }
+
+  .supplybook-list-header {
+    margin-bottom: 12px;
+  }
+
+  .supplybook-list-header .btn,
+  .supplybook-add-fab {
+    width: auto;
+  }
+
+  .supplybook-add-fab.btn {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+
+  .supplybook-controls {
+    grid-template-columns: minmax(0, 1fr) 46px;
+    gap: 8px;
+  }
+
+  .supplybook-sort-btn.btn {
+    width: 46px;
+    min-width: 46px;
+    height: 46px;
+    padding: 0;
+  }
+
+  .supplybook-sort-options {
+    right: 0;
+  }
+
+  .supplier-item {
+    padding: 14px 4px;
   }
 }
