@@ -84,6 +84,3 @@ FOREIGN KEY (supplier_id)
 REFERENCES Suppliers(id)
 ON DELETE CASCADE;
 
-INSERT INTO Suppliers (name)
-SELECT DISTINCT supplier_name FROM Supply_Deliveries;
-
