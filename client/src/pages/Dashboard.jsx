@@ -8,12 +8,14 @@ import SupplyTab from "../components/dashboard/SupplyTab";
 import SupplyHistoryTab from "../components/dashboard/SupplyHistoryTab";
 import ThemeToggle from "../components/ThemeToggle";
 import { EditIcon,TrashIcon } from "../components/Icons";
+import ConfirmLogout from "../components/ConfirmLogout";
 
 function Dashboard() {
   const [activeTab, setActiveTab] = useState("inventory");
   const [isTabMenuOpen, setIsTabMenuOpen] = useState(false);
   const [products, setProducts] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const navigate = useNavigate();
   const role = localStorage.getItem("role");
 
@@ -391,7 +393,7 @@ function Dashboard() {
           </div>
           <div className="header-actions">
             <ThemeToggle/>
-            <button onClick={handleLogout} className="btn btn-danger">
+            <button onClick={() => setShowLogoutConfirm(true)} className="btn btn-danger">
               Logout
             </button>
           </div>
@@ -517,7 +519,16 @@ function Dashboard() {
       {selectedSale && (
         <PrintReceipt selectedSale={selectedSale} saleItems={saleItems} />
       )}
+      <div>
+        {/* LOGOUT CONFIRMATION MODAL */}
+        {(showLogoutConfirm) && (
+          <ConfirmLogout
+            setShowLogoutConfirm={setShowLogoutConfirm}
+          />
+        )}
+      </div>
     </div>
+    
   );
 }
 

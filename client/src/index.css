@@ -51,6 +51,49 @@ body {
   padding: 0;
 }
 
+/* Confirm Logout Styles */
+.confirm-logout-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(15, 23, 42, 0.4);
+  padding: 1rem;
+}
+
+.confirm-logout-modal {
+  width: 100%;
+  max-width: 28rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background-color: var(--surface);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.confirm-logout-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.confirm-logout-message {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.confirm-logout-buttons {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
 /* Typography */
 h1, h2, h3 { color: var(--text-main); margin-top: 0; }
 .text-muted { color: var(--text-muted); font-size: 0.9em; }
@@ -914,11 +957,18 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
 }
 
 .supplybook-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
   margin-bottom: 20px;
 }
 
-.supplybook-title-row,
-.supplybook-title-with-toggle,
+.supplybook-back-btn {
+  width: auto;
+  max-width: 180px;
+}
+
 .supplybook-tabs,
 .supplybook-list-header,
 .supplybook-controls {
@@ -927,18 +977,20 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
   gap: 10px;
 }
 
-.supplybook-title-row,
+
 .supplybook-list-header {
   justify-content: space-between;
 }
 
-.supplybook-title-row {
-  flex-wrap: nowrap;
-}
 
-.supplybook-title-with-toggle h2,
+.supplybook-page-title,
 .supplybook-list-header h3 {
   margin: 0;
+}
+
+.supplybook-page-title {
+  justify-self: center;
+  text-align: center;
 }
 
 .supplybook-tabs {
@@ -1016,6 +1068,17 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
   background: var(--secondary);
 }
 
+.supplybook-header-actions {
+  justify-self: end;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.supplybook-page-title {
+  margin: 0;
+}
+
 @media (max-width: 768px) {
   .supplier-item {
     font-size: 16px;
@@ -1077,20 +1140,12 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
 }
 
 @media (max-width: 480px) {
-  .supplybook-title-row {
-    align-items: center;
-    flex-direction: row;
+  .supplybook-header {
+    grid-template-columns: auto 1fr auto;
     gap: 8px;
   }
 
-  .supplybook-title-with-toggle {
-    flex: 1;
-    min-width: 0;
-    justify-content: flex-end;
-    gap: 8px;
-  }
-
-  .supplybook-title-with-toggle h2 {
+  .supplybook-page-title {
     font-size: 1.1rem;
     line-height: 1.2;
     white-space: nowrap;
@@ -1104,8 +1159,17 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
     white-space: nowrap;
   }
 
-  .supplybook-title-with-toggle .theme-toggle {
+  .supplybook-header-actions {
+    gap: 6px;
+  }
+
+  .supplybook-header-actions .theme-toggle {
     flex: 0 0 40px;
+  }
+
+  .supplybook-header-actions .btn-danger {
+    padding: 10px 11px;
+    font-size: 0.82rem;
   }
 
   .supplybook-tabs {

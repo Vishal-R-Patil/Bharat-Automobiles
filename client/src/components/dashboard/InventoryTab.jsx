@@ -50,6 +50,7 @@ function InventoryTab(props) {
                 }
               setIsAddingNew(true)}}
             className="btn btn-primary"
+            style={{ fontWeight: 500 }}
           >
             + Quick Add Product
           </button>
@@ -186,7 +187,7 @@ function InventoryTab(props) {
                   </button>
                   <button
                     onClick={() => setIsAddingNew(false)}
-                    className="btn btn-outline"
+                    className="btn btn-danger"
                   >
                     Cancel
                   </button>
@@ -264,7 +265,7 @@ function InventoryTab(props) {
                       <button
                         type="button"
                         onClick={() => setEditingId && setEditingId(null)}
-                        className="btn btn-outline"
+                        className="btn btn-danger"
                       >
                         Cancel
                       </button>

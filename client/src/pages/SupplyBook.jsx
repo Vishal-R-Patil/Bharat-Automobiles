@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowUpDown, Plus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import API from "../api";
-import ThemeToggle from "../components/ThemeToggle";
 import { TrashIcon } from "../components/Icons";
+import ConfirmLogout from "../components/ConfirmLogout";
+import SupplyBookHeader from "../components/SupplyBookHeader";
 
 function SupplyBook() {
   const [activeTab, setActiveTab] = useState("view");
@@ -14,8 +14,7 @@ function SupplyBook() {
   const [supplierSearch, setSupplierSearch] = useState("");
   const [sortMode, setSortMode] = useState("recent");
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
-
-  const navigate = useNavigate();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const fetchSuppliers = async () => {
     try {
@@ -130,20 +129,7 @@ function SupplyBook() {
   if (selected) {
     return (
       <div className="dashboard-container">
-        <div className="supplybook-header">
-          <div className="supplybook-title-row">
-            <button
-              className="btn btn-outline supplybook-back-btn"
-              onClick={() => navigate("/dashboard")}
-            >
-              ← Dashboard
-            </button>
-            <div className="supplybook-title-with-toggle">
-              <h2>Supply Book</h2>
-              <ThemeToggle />
-            </div>
-          </div>
-        </div>
+        <SupplyBookHeader onLogoutClick={() => setShowLogoutConfirm(true)} />
 
         <div className="card">
           <div className="flex-between mb-4">
@@ -177,26 +163,17 @@ function SupplyBook() {
             ))
           )}
         </div>
+
+        {showLogoutConfirm && (
+          <ConfirmLogout setShowLogoutConfirm={setShowLogoutConfirm} />
+        )}
       </div>
     );
   }
 
   return (
     <div className="dashboard-container">
-      <div className="supplybook-header">
-        <div className="supplybook-title-row">
-          <button
-            className="btn btn-outline supplybook-back-btn"
-            onClick={() => navigate("/dashboard")}
-          >
-            ← Dashboard
-          </button>
-          <div className="supplybook-title-with-toggle">
-            <h2>Supply Book</h2>
-            <ThemeToggle />
-          </div>
-        </div>
-      </div>
+      <SupplyBookHeader onLogoutClick={() => setShowLogoutConfirm(true)} />
 
       <div className="card">
         <div className="supplybook-tabs mb-4">
@@ -335,6 +312,9 @@ function SupplyBook() {
           </form>
         )}
       </div>
+      {showLogoutConfirm && (
+        <ConfirmLogout setShowLogoutConfirm={setShowLogoutConfirm} />
+      )}
     </div>
   );
 }
