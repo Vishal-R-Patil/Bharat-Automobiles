@@ -84,3 +84,39 @@ FOREIGN KEY (supplier_id)
 REFERENCES Suppliers(id)
 ON DELETE CASCADE;
 
+
+-- Adding payments to suppliers (Supplier_payments) and adding image attachments
+CREATE TABLE Supplier_Payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    supplier_id INT NOT NULL,
+
+    payment_date DATE NOT NULL,
+
+    amount DECIMAL(10,2) NOT NULL,
+
+    payment_method VARCHAR(50),
+
+    note TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (supplier_id)
+    REFERENCES Suppliers(id)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE Attachments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    entity_type ENUM(
+        'supply_delivery',
+        'supplier_payment'
+    ) NOT NULL,
+
+    entity_id INT NOT NULL,
+
+    file_url VARCHAR(500) NOT NULL,
+
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
