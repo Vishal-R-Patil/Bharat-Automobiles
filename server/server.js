@@ -21,6 +21,8 @@ const billingRoutes = require('./routes/billingRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 // supplier routes
 const supplierRoutes= require('./routes/supplierRoutes');
+const supplyBookRoutes = require('./routes/supplyBookRoutes');
+const { connectMongo } = require('./config/mongodb');
 
 // Tell Express: "Any URL that starts with /api/products should use the productRoutes file"
 app.use('/api/products', productRoutes);
@@ -34,8 +36,13 @@ app.use('/api/billing', billingRoutes);
 app.use('/api', reportRoutes);
 // supplier routes
 app.use("/api/suppliers", supplierRoutes);
+app.use("/api/supplybook", supplyBookRoutes);
 
 const PORT = process.env.PORT || 3000;
+connectMongo().catch((err) => {
+    console.error("❌ SupplyBook MongoDB connection failed:", err.message);
+});
+
 app.listen(PORT, () => {
     console.log(`🚗 Bharat Automobiles Server running on http://localhost:${PORT}`);
 });

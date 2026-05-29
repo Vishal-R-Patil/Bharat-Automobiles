@@ -1250,6 +1250,43 @@ label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-
   justify-content: center;
 }
 
+.supplybook-page-title.clickable {
+  cursor: pointer;
+}
+
+.supplybook-add-menu {
+  position: relative;
+}
+
+.supplybook-add-menu-panel {
+  position: absolute;
+  top: 52px;
+  right: 0;
+  display: grid;
+  gap: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  min-width: 170px;
+  z-index: 20;
+}
+
+.supplybook-add-menu-panel button {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+}
+
+.transaction-modal .modal-content {
+  max-width: 700px;
+}
+
+.supplier-details-row p {
+  margin: 0 0 6px;
+}
+
 .supplybook-tabs,
 .supplybook-list-header,
 .supplybook-controls {

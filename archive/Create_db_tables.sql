@@ -110,7 +110,7 @@ CREATE TABLE Attachments (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
     entity_type ENUM(
-        'supply_delivery',
+        'supplier_invoice',
         'supplier_payment'
     ) NOT NULL,
 

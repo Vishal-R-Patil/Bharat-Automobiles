@@ -4,6 +4,8 @@ import API from "../api";
 import ConfirmLogout from "../components/ConfirmLogout";
 import SupplyBookHeader from "../components/SupplyBookHeader";
 
+const SUPPLYBOOK_API = "/supplybook";
+
 function SupplyBook() {
   const [activeTab, setActiveTab] = useState("view");
   const [suppliers, setSuppliers] = useState([]);
@@ -22,14 +24,25 @@ function SupplyBook() {
     payment_method: "",
     note: "",
   });
+  const [newDelivery, setNewDelivery] = useState({
+    invoice_number: "",
+    issued_date: new Date().toISOString().slice(0, 10),
+    delivery_date: new Date().toISOString().slice(0, 10),
+    total_cost: "",
+  });
   const [paymentImage, setPaymentImage] = useState(null);
+  const [deliveryImage, setDeliveryImage] = useState(null);
   const [attachmentFiles, setAttachmentFiles] = useState({});
   const [supplierSearch, setSupplierSearch] = useState("");
   const [sortMode, setSortMode] = useState("recent");
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
-  const [expandedLedgerId, setExpandedLedgerId] = useState(null);
+  const [showSupplyForm, setShowSupplyForm] = useState(false);
+  const [activeTransaction, setActiveTransaction] = useState(null);
+  const [transactionUpdates, setTransactionUpdates] = useState({});
+  const [showSupplierEdit, setShowSupplierEdit] = useState(false);
+  const [supplierForm, setSupplierForm] = useState({ gst_no: "", phone: "", email: "" });
   const [showBillViewer, setShowBillViewer] = useState(false);
   const [billImages, setBillImages] = useState([]);
   const [activeBillIndex, setActiveBillIndex] = useState(0);
@@ -41,7 +54,7 @@ function SupplyBook() {
 
   const fetchSuppliers = async () => {
     try {
-      const res = await API.get("/suppliers");
+      const res = await API.get(`${SUPPLYBOOK_API}/suppliers`);
       setSuppliers(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
@@ -51,7 +64,7 @@ function SupplyBook() {
   useEffect(() => {
     let isMounted = true;
 
-    API.get("/suppliers")
+    API.get(`${SUPPLYBOOK_API}/suppliers`)
       .then((res) => {
         if (isMounted) {
           setSuppliers(Array.isArray(res.data) ? res.data : []);
@@ -75,7 +88,7 @@ function SupplyBook() {
     }
     params.type = billFilters.type;
 
-    API.get("/suppliers/bills", { params })
+    API.get(`${SUPPLYBOOK_API}/bills`, { params })
       .then((res) => {
         const rows = Array.isArray(res.data) ? res.data : [];
         setBillImages(rows);
@@ -91,7 +104,7 @@ function SupplyBook() {
     e.preventDefault();
     if (!newSupplier.name) return alert("Supplier name required");
     try {
-      await API.post("/suppliers", newSupplier);
+      await API.post(`${SUPPLYBOOK_API}/suppliers`, newSupplier);
       setNewSupplier({ name: "", gst_no: "" });
       fetchSuppliers();
       setActiveTab("view");
@@ -102,7 +115,7 @@ function SupplyBook() {
   };
 
   const fetchSupplierLedger = async (supplier) => {
-    const res = await API.get(`/suppliers/${supplier.id}/ledger`);
+    const res = await API.get(`${SUPPLYBOOK_API}/suppliers/${supplier.id}/ledger`);
     setSelected(res.data.supplier || supplier);
     setTransactions(Array.isArray(res.data.deliveries) ? res.data.deliveries : []);
     setPayments(Array.isArray(res.data.payments) ? res.data.payments : []);
@@ -115,11 +128,20 @@ function SupplyBook() {
     );
   };
 
+  useEffect(() => {
+    if (!selected) return;
+    setSupplierForm({
+      gst_no: selected.gst_no || "",
+      phone: selected.phone || "",
+      email: selected.email || "",
+    });
+  }, [selected]);
+
   const deleteSupplier = async () => {
     if (!selected) return;
     if (!window.confirm("Delete this supplier?")) return;
     try {
-      await API.delete(`/suppliers/${selected.id}`);
+      await API.delete(`${SUPPLYBOOK_API}/suppliers/${selected.id}`);
       setSelected(null);
       setTransactions([]);
       setPayments([]);
@@ -132,6 +154,100 @@ function SupplyBook() {
       } else {
         alert("Failed to delete supplier");
       }
+    }
+  };
+
+  const openTransactionModal = (entry) => {
+    setActiveTransaction(entry);
+    setTransactionUpdates({
+      invoice_number: entry.type === "supply" ? entry.source.invoice_number || "" : "",
+      issued_date:
+        entry.type === "supply"
+          ? entry.source.issued_date || new Date().toISOString().slice(0, 10)
+          : "",
+      delivery_date:
+        entry.type === "supply"
+          ? entry.source.delivery_date || new Date().toISOString().slice(0, 10)
+          : "",
+      payment_method: entry.type === "payment" ? entry.source.payment_method || "" : "",
+      note: entry.type === "payment" ? entry.source.note || "" : "",
+    });
+  };
+
+  const closeTransactionModal = () => {
+    setActiveTransaction(null);
+    setTransactionUpdates({});
+  };
+
+  const handleTransactionUpdate = async (e) => {
+    e.preventDefault();
+    if (!selected || !activeTransaction) return;
+
+    const entityType = activeTransaction.type === "supply" ? "supply_delivery" : "supplier_payment";
+    const payload = {
+      entity_type: entityType,
+      entity_id: activeTransaction.source.id,
+    };
+
+    if (entityType === "supply_delivery") {
+      payload.invoice_number = transactionUpdates.invoice_number;
+      payload.issued_date = transactionUpdates.issued_date;
+      payload.delivery_date = transactionUpdates.delivery_date;
+    } else {
+      payload.payment_method = transactionUpdates.payment_method;
+      payload.note = transactionUpdates.note;
+    }
+
+    try {
+      await API.patch(
+        `${SUPPLYBOOK_API}/suppliers/${selected.id}/transactions`,
+        payload,
+      );
+      await fetchSupplierLedger(selected);
+      fetchSuppliers();
+      closeTransactionModal();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || "Failed to save transaction details");
+    }
+  };
+
+  const handleDeleteTransaction = async () => {
+    if (!selected || !activeTransaction) return;
+    if (!window.confirm("Delete this transaction from supplier ledger?")) return;
+
+    try {
+      await API.delete(`${SUPPLYBOOK_API}/suppliers/${selected.id}/transactions`, {
+        params: {
+          entity_type: activeTransaction.type === "supply" ? "supply_delivery" : "supplier_payment",
+          entity_id: activeTransaction.source.id,
+        },
+      });
+      closeTransactionModal();
+      await fetchSupplierLedger(selected);
+      fetchSuppliers();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || "Failed to delete transaction");
+    }
+  };
+
+  const handleSupplierEditClick = () => {
+    setShowSupplierEdit(true);
+  };
+
+  const handleSupplierUpdate = async (e) => {
+    e.preventDefault();
+    if (!selected) return;
+
+    try {
+      await API.patch(`${SUPPLYBOOK_API}/suppliers/${selected.id}`, supplierForm);
+      await fetchSupplierLedger(selected);
+      fetchSuppliers();
+      setShowSupplierEdit(false);
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || "Failed to update supplier details");
     }
   };
 
@@ -151,7 +267,8 @@ function SupplyBook() {
     setLedgerSummary({ totalSupplies: 0, totalPayments: 0, balance: 0 });
     setAttachmentFiles({});
     setShowPaymentForm(false);
-    setExpandedLedgerId(null);
+    setShowSupplyForm(false);
+    setActiveTransaction(null);
   };
 
   const visibleSuppliers = useMemo(() => {
@@ -218,7 +335,7 @@ function SupplyBook() {
       formData.append("note", newPayment.note);
       if (paymentImage) formData.append("image", paymentImage);
 
-      await API.post(`/suppliers/${selected.id}/payments`, formData);
+      await API.post(`${SUPPLYBOOK_API}/suppliers/${selected.id}/payments`, formData);
       setNewPayment({
         payment_date: new Date().toISOString().slice(0, 10),
         amount: "",
@@ -235,6 +352,38 @@ function SupplyBook() {
     }
   };
 
+  const handleDeliverySubmit = async (e) => {
+    e.preventDefault();
+    if (!selected) return;
+    if (!newDelivery.total_cost) {
+      return alert("Supply amount is required");
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("invoice_number", newDelivery.invoice_number);
+      formData.append("issued_date", newDelivery.issued_date);
+      formData.append("delivery_date", newDelivery.delivery_date);
+      formData.append("total_cost", newDelivery.total_cost);
+      if (deliveryImage) formData.append("image", deliveryImage);
+
+      await API.post(`${SUPPLYBOOK_API}/suppliers/${selected.id}/deliveries`, formData);
+      setNewDelivery({
+        invoice_number: "",
+        issued_date: new Date().toISOString().slice(0, 10),
+        delivery_date: new Date().toISOString().slice(0, 10),
+        total_cost: "",
+      });
+      setDeliveryImage(null);
+      setShowSupplyForm(false);
+      await fetchSupplierLedger(selected);
+      fetchSuppliers();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || "Failed to add supply bill");
+    }
+  };
+
   const handleAttachmentSubmit = async (entityType, entityId) => {
     const key = `${entityType}:${entityId}`;
     const image = attachmentFiles[key];
@@ -246,7 +395,7 @@ function SupplyBook() {
       formData.append("entity_id", entityId);
       formData.append("image", image);
 
-      await API.post("/suppliers/attachments", formData);
+      await API.post(`${SUPPLYBOOK_API}/attachments`, formData);
       setAttachmentFiles((current) => ({ ...current, [key]: null }));
       await fetchSupplierLedger(selected);
       setShowBillViewer(false);
@@ -260,7 +409,7 @@ function SupplyBook() {
     if (!window.confirm("Delete this image?")) return;
 
     try {
-      await API.delete(`/suppliers/attachments/${attachmentId}`);
+      await API.delete(`${SUPPLYBOOK_API}/attachments/${attachmentId}`);
       await fetchSupplierLedger(selected);
       setShowBillViewer(false);
     } catch (err) {
@@ -481,14 +630,21 @@ function SupplyBook() {
         <SupplyBookHeader
           title={selected.name}
           onBack={handleBackToSuppliers}
+          onTitleClick={handleSupplierEditClick}
           onAddPayment={() => setShowPaymentForm(true)}
+          onAddSupply={() => setShowSupplyForm(true)}
           onDelete={deleteSupplier}
           onViewBills={() => setShowBillViewer(true)}
           onLogoutClick={() => setShowLogoutConfirm(true)}
         />
 
         <div className="card">
-          <p className="text-muted mb-4">GST no: {selected.gst_no || "No GST"}</p>
+          <div className="supplier-details-row mb-4">
+            <p className="text-muted mb-1">GST no: {selected.gst_no || "No GST"}</p>
+            <p className="text-muted mb-1">Phone: {selected.phone || "No phone"}</p>
+            <p className="text-muted mb-1">Email: {selected.email || "No email"}</p>
+            <p className="text-muted mb-0">Tap the supplier name at the top to edit details.</p>
+          </div>
 
           <div className="ledger-summary">
             <div>
@@ -521,63 +677,263 @@ function SupplyBook() {
                   <button
                     type="button"
                     className="ledger-compact-btn"
-                    onClick={() =>
-                      setExpandedLedgerId((current) =>
-                        current === entry.id ? null : entry.id,
-                      )
+                    onClick={() => openTransactionModal(entry)}
+                    aria-label={
+                      entry.type === "supply"
+                        ? "Open supply transaction details"
+                        : "Open payment transaction details"
                     }
-                    aria-expanded={expandedLedgerId === entry.id}
                   >
                     <strong>{formatCurrency(entry.amount)}</strong>
                     <span>{formatDate(entry.date)}</span>
                   </button>
-
-                  {expandedLedgerId === entry.id && (
-                    <div className="ledger-expanded">
-                      <strong>{entry.title}</strong>
-                      <p className="text-muted">{entry.meta}</p>
-                      {entry.type === "supply" && (
-                        <p className="text-muted">
-                          Invoice: {entry.source.invoice_number || "No invoice number"}
-                        </p>
-                      )}
-
-                      {renderAttachments(entry.attachments)}
-
-                      <div className="attachment-form">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="input-field"
-                          onChange={(e) =>
-                            setAttachmentFiles({
-                              ...attachmentFiles,
-                              [key]: e.target.files?.[0] || null,
-                            })
-                          }
-                        />
-                        <button
-                          type="button"
-                          className="btn btn-outline"
-                          onClick={() =>
-                            handleAttachmentSubmit(
-                              entry.type === "supply"
-                                ? "supply_delivery"
-                                : "supplier_payment",
-                              entry.source.id,
-                            )
-                          }
-                        >
-                          Add Image
-                        </button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               );
             })
           )}
         </div>
+
+        {activeTransaction && (
+          <div className="modal-overlay">
+            <div className="modal-content supplybook-payment-modal transaction-modal">
+              <div className="supplybook-list-header mb-4">
+                <h3>
+                  {activeTransaction.type === "supply"
+                    ? "Supply Transaction"
+                    : "Payment Transaction"}
+                </h3>
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={closeTransactionModal}
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className="ledger-expanded mb-4">
+                <strong>{activeTransaction.title}</strong>
+                <p className="text-muted">{activeTransaction.meta}</p>
+                <p>
+                  <strong>{formatCurrency(activeTransaction.amount)}</strong> · {formatDate(activeTransaction.date)}
+                </p>
+                {activeTransaction.type === "supply" && (
+                  <p className="text-muted">
+                    Invoice: {activeTransaction.source.invoice_number || "No invoice number"}
+                  </p>
+                )}
+              </div>
+
+              <form onSubmit={handleTransactionUpdate}>
+                {activeTransaction.type === "supply" ? (
+                  <>
+                    <div className="form-grid mb-4">
+                      <div>
+                        <label>Invoice Number</label>
+                        <input
+                          className="input-field"
+                          value={transactionUpdates.invoice_number}
+                          onChange={(e) =>
+                            setTransactionUpdates({
+                              ...transactionUpdates,
+                              invoice_number: e.target.value,
+                            })
+                          }
+                          placeholder="Invoice number"
+                        />
+                      </div>
+                      <div>
+                        <label>Issued Date</label>
+                        <input
+                          type="date"
+                          className="input-field"
+                          value={transactionUpdates.issued_date}
+                          onChange={(e) =>
+                            setTransactionUpdates({
+                              ...transactionUpdates,
+                              issued_date: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label>Received Date</label>
+                        <input
+                          type="date"
+                          className="input-field"
+                          value={transactionUpdates.delivery_date}
+                          onChange={(e) =>
+                            setTransactionUpdates({
+                              ...transactionUpdates,
+                              delivery_date: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="attachment-form mb-4">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="input-field"
+                        onChange={(e) =>
+                          setAttachmentFiles({
+                            ...attachmentFiles,
+                            [`supply_delivery:${activeTransaction.source.id}`]:
+                              e.target.files?.[0] || null,
+                          })
+                        }
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-outline"
+                        onClick={() =>
+                          handleAttachmentSubmit(
+                            "supply_delivery",
+                            activeTransaction.source.id,
+                          )
+                        }
+                      >
+                        Add Invoice Image
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="form-grid mb-4">
+                      <div>
+                        <label>Payment Method</label>
+                        <input
+                          className="input-field"
+                          value={transactionUpdates.payment_method}
+                          onChange={(e) =>
+                            setTransactionUpdates({
+                              ...transactionUpdates,
+                              payment_method: e.target.value,
+                            })
+                          }
+                          placeholder="Cash, UPI, bank transfer"
+                        />
+                      </div>
+                      <div>
+                        <label>Note</label>
+                        <input
+                          className="input-field"
+                          value={transactionUpdates.note}
+                          onChange={(e) =>
+                            setTransactionUpdates({
+                              ...transactionUpdates,
+                              note: e.target.value,
+                            })
+                          }
+                          placeholder="Payment note"
+                        />
+                      </div>
+                    </div>
+                    <div className="attachment-form mb-4">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="input-field"
+                        onChange={(e) =>
+                          setAttachmentFiles({
+                            ...attachmentFiles,
+                            [`supplier_payment:${activeTransaction.source.id}`]:
+                              e.target.files?.[0] || null,
+                          })
+                        }
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-outline"
+                        onClick={() =>
+                          handleAttachmentSubmit(
+                            "supplier_payment",
+                            activeTransaction.source.id,
+                          )
+                        }
+                      >
+                        Add Payment Image
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {renderAttachments(activeTransaction.attachments)}
+
+                <div className="modal-actions">
+                  <button type="submit" className="btn btn-primary">
+                    Save details
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline"
+                    onClick={handleDeleteTransaction}
+                  >
+                    Delete transaction
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {showSupplierEdit && selected && (
+          <div className="modal-overlay">
+            <div className="modal-content supplybook-payment-modal">
+              <div className="supplybook-list-header mb-4">
+                <h3>Edit Supplier Details</h3>
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => setShowSupplierEdit(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+              <form onSubmit={handleSupplierUpdate}>
+                <div className="form-grid mb-4">
+                  <div>
+                    <label>GST No</label>
+                    <input
+                      className="input-field"
+                      value={supplierForm.gst_no}
+                      onChange={(e) =>
+                        setSupplierForm({ ...supplierForm, gst_no: e.target.value })
+                      }
+                      placeholder="GST number"
+                    />
+                  </div>
+                  <div>
+                    <label>Phone</label>
+                    <input
+                      className="input-field"
+                      value={supplierForm.phone}
+                      onChange={(e) =>
+                        setSupplierForm({ ...supplierForm, phone: e.target.value })
+                      }
+                      placeholder="Phone number"
+                    />
+                  </div>
+                  <div>
+                    <label>Email</label>
+                    <input
+                      className="input-field"
+                      value={supplierForm.email}
+                      onChange={(e) =>
+                        setSupplierForm({ ...supplierForm, email: e.target.value })
+                      }
+                      placeholder="Email address"
+                    />
+                  </div>
+                </div>
+                <button type="submit" className="btn btn-primary">
+                  Save Supplier Details
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
 
         {showPaymentForm && (
           <div className="modal-overlay">
@@ -655,6 +1011,100 @@ function SupplyBook() {
                 />
                 <button type="submit" className="btn btn-primary">
                   Save Payment
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {showSupplyForm && (
+          <div className="modal-overlay">
+            <div className="modal-content supplybook-payment-modal">
+              <div className="supplybook-list-header mb-4">
+                <h3>Add Supply Bill</h3>
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => setShowSupplyForm(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+              <form onSubmit={handleDeliverySubmit}>
+                <div className="form-grid mb-4">
+                  <div>
+                    <label>Invoice Number</label>
+                    <input
+                      className="input-field"
+                      placeholder="Invoice number"
+                      value={newDelivery.invoice_number}
+                      onChange={(e) =>
+                        setNewDelivery({
+                          ...newDelivery,
+                          invoice_number: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label>Amount</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      className="input-field"
+                      placeholder="Supply bill amount"
+                      value={newDelivery.total_cost}
+                      onChange={(e) =>
+                        setNewDelivery({
+                          ...newDelivery,
+                          total_cost: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label>Issued Date</label>
+                    <input
+                      type="date"
+                      className="input-field"
+                      value={newDelivery.issued_date}
+                      onChange={(e) =>
+                        setNewDelivery({
+                          ...newDelivery,
+                          issued_date: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label>Received Date</label>
+                    <input
+                      type="date"
+                      className="input-field"
+                      value={newDelivery.delivery_date}
+                      onChange={(e) =>
+                        setNewDelivery({
+                          ...newDelivery,
+                          delivery_date: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label>Bill Image</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="input-field"
+                      onChange={(e) =>
+                        setDeliveryImage(e.target.files?.[0] || null)
+                      }
+                    />
+                  </div>
+                </div>
+                <button type="submit" className="btn btn-primary">
+                  Save Supply Bill
                 </button>
               </form>
             </div>
