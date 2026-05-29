@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, Plus, Trash2, X } from "lucide-react";
+import { Menu, Plus, Trash2, X, Edit2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 
@@ -62,6 +62,13 @@ function SupplyBookHeader({
         } : undefined}
       >
         {title}
+        {onTitleClick && (
+          <Edit2
+            size={16}
+            className="supplybook-edit-icon"
+            aria-label="Edit supplier details"
+          />
+        )}
       </h2>
 
       <div className="supplybook-header-actions">
@@ -113,7 +120,7 @@ function SupplyBookHeader({
         )}
         {onDelete && (
           <button
-            className="btn btn-icon supplybook-symbol-btn"
+            className="btn btn-icon supplybook-symbol-btn danger"
             type="button"
             onClick={onDelete}
             aria-label="Delete supplier"

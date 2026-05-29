@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowUpDown, Plus } from "lucide-react";
+import { ArrowUpDown, Plus, Edit2 } from "lucide-react";
 import API from "../api";
 import ConfirmLogout from "../components/ConfirmLogout";
 import SupplyBookHeader from "../components/SupplyBookHeader";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 const SUPPLYBOOK_API = "/supplybook";
 
@@ -51,6 +52,8 @@ function SupplyBook() {
     type: "both",
   });
   const [touchStartX, setTouchStartX] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
 
   const fetchSuppliers = async () => {
     try {
@@ -199,6 +202,8 @@ function SupplyBook() {
     }
 
     try {
+      setIsLoading(true);
+      setLoadingMessage("Saving transaction details...");
       await API.patch(
         `${SUPPLYBOOK_API}/suppliers/${selected.id}/transactions`,
         payload,
@@ -209,6 +214,9 @@ function SupplyBook() {
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Failed to save transaction details");
+    } finally {
+      setIsLoading(false);
+      setLoadingMessage("");
     }
   };
 
@@ -217,6 +225,8 @@ function SupplyBook() {
     if (!window.confirm("Delete this transaction from supplier ledger?")) return;
 
     try {
+      setIsLoading(true);
+      setLoadingMessage("Deleting transaction...");
       await API.delete(`${SUPPLYBOOK_API}/suppliers/${selected.id}/transactions`, {
         params: {
           entity_type: activeTransaction.type === "supply" ? "supply_delivery" : "supplier_payment",
@@ -229,6 +239,9 @@ function SupplyBook() {
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Failed to delete transaction");
+    } finally {
+      setIsLoading(false);
+      setLoadingMessage("");
     }
   };
 
@@ -241,6 +254,8 @@ function SupplyBook() {
     if (!selected) return;
 
     try {
+      setIsLoading(true);
+      setLoadingMessage("Saving supplier details...");
       await API.patch(`${SUPPLYBOOK_API}/suppliers/${selected.id}`, supplierForm);
       await fetchSupplierLedger(selected);
       fetchSuppliers();
@@ -248,6 +263,9 @@ function SupplyBook() {
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Failed to update supplier details");
+    } finally {
+      setIsLoading(false);
+      setLoadingMessage("");
     }
   };
 
@@ -328,6 +346,8 @@ function SupplyBook() {
     }
 
     try {
+      setIsLoading(true);
+      setLoadingMessage("Saving payment...");
       const formData = new FormData();
       formData.append("payment_date", newPayment.payment_date);
       formData.append("amount", newPayment.amount);
@@ -349,6 +369,9 @@ function SupplyBook() {
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Failed to add supplier payment");
+    } finally {
+      setIsLoading(false);
+      setLoadingMessage("");
     }
   };
 
@@ -360,6 +383,8 @@ function SupplyBook() {
     }
 
     try {
+      setIsLoading(true);
+      setLoadingMessage("Saving supply bill...");
       const formData = new FormData();
       formData.append("invoice_number", newDelivery.invoice_number);
       formData.append("issued_date", newDelivery.issued_date);
@@ -381,6 +406,31 @@ function SupplyBook() {
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Failed to add supply bill");
+    } finally {
+      setIsLoading(false);
+      setLoadingMessage("");
+    }
+  };
+
+  const handleAutoUploadImage = async (file, entityType, entityId) => {
+    if (!file) return;
+    try {
+      setIsLoading(true);
+      setLoadingMessage("Uploading image...");
+      const formData = new FormData();
+      formData.append("entity_type", entityType);
+      formData.append("entity_id", entityId);
+      formData.append("image", file);
+
+      await API.post(`${SUPPLYBOOK_API}/attachments`, formData);
+      await fetchSupplierLedger(selected);
+      setShowBillViewer(false);
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || "Failed to upload image");
+    } finally {
+      setIsLoading(false);
+      setLoadingMessage("");
     }
   };
 
@@ -390,6 +440,8 @@ function SupplyBook() {
     if (!image) return alert("Image required");
 
     try {
+      setIsLoading(true);
+      setLoadingMessage("Uploading image...");
       const formData = new FormData();
       formData.append("entity_type", entityType);
       formData.append("entity_id", entityId);
@@ -402,6 +454,9 @@ function SupplyBook() {
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Failed to add image");
+    } finally {
+      setIsLoading(false);
+      setLoadingMessage("");
     }
   };
 
@@ -409,12 +464,17 @@ function SupplyBook() {
     if (!window.confirm("Delete this image?")) return;
 
     try {
+      setIsLoading(true);
+      setLoadingMessage("Deleting image...");
       await API.delete(`${SUPPLYBOOK_API}/attachments/${attachmentId}`);
       await fetchSupplierLedger(selected);
       setShowBillViewer(false);
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Failed to delete image");
+    } finally {
+      setIsLoading(false);
+      setLoadingMessage("");
     }
   };
 
@@ -639,13 +699,6 @@ function SupplyBook() {
         />
 
         <div className="card">
-          <div className="supplier-details-row mb-4">
-            <p className="text-muted mb-1">GST no: {selected.gst_no || "No GST"}</p>
-            <p className="text-muted mb-1">Phone: {selected.phone || "No phone"}</p>
-            <p className="text-muted mb-1">Email: {selected.email || "No email"}</p>
-            <p className="text-muted mb-0">Tap the supplier name at the top to edit details.</p>
-          </div>
-
           <div className="ledger-summary">
             <div>
               <span>Total supplies</span>
@@ -772,30 +825,22 @@ function SupplyBook() {
                       </div>
                     </div>
                     <div className="attachment-form mb-4">
+                      <label>Invoice Image (optional)</label>
                       <input
                         type="file"
                         accept="image/*"
                         className="input-field"
-                        onChange={(e) =>
-                          setAttachmentFiles({
-                            ...attachmentFiles,
-                            [`supply_delivery:${activeTransaction.source.id}`]:
-                              e.target.files?.[0] || null,
-                          })
-                        }
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            handleAutoUploadImage(
+                              file,
+                              "supply_delivery",
+                              activeTransaction.source.id,
+                            );
+                          }
+                        }}
                       />
-                      <button
-                        type="button"
-                        className="btn btn-outline"
-                        onClick={() =>
-                          handleAttachmentSubmit(
-                            "supply_delivery",
-                            activeTransaction.source.id,
-                          )
-                        }
-                      >
-                        Add Invoice Image
-                      </button>
                     </div>
                   </>
                 ) : (
@@ -831,30 +876,22 @@ function SupplyBook() {
                       </div>
                     </div>
                     <div className="attachment-form mb-4">
+                      <label>Payment Image (optional)</label>
                       <input
                         type="file"
                         accept="image/*"
                         className="input-field"
-                        onChange={(e) =>
-                          setAttachmentFiles({
-                            ...attachmentFiles,
-                            [`supplier_payment:${activeTransaction.source.id}`]:
-                              e.target.files?.[0] || null,
-                          })
-                        }
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            handleAutoUploadImage(
+                              file,
+                              "supplier_payment",
+                              activeTransaction.source.id,
+                            );
+                          }
+                        }}
                       />
-                      <button
-                        type="button"
-                        className="btn btn-outline"
-                        onClick={() =>
-                          handleAttachmentSubmit(
-                            "supplier_payment",
-                            activeTransaction.source.id,
-                          )
-                        }
-                      >
-                        Add Payment Image
-                      </button>
                     </div>
                   </>
                 )}
@@ -1116,6 +1153,8 @@ function SupplyBook() {
         {showLogoutConfirm && (
           <ConfirmLogout setShowLogoutConfirm={setShowLogoutConfirm} />
         )}
+
+        <LoadingOverlay isVisible={isLoading} message={loadingMessage} />
       </div>
     );
   }
@@ -1253,6 +1292,7 @@ function SupplyBook() {
         <ConfirmLogout setShowLogoutConfirm={setShowLogoutConfirm} />
       )}
       {billViewerModal}
+      <LoadingOverlay isVisible={isLoading} message={loadingMessage} />
     </div>
   );
 }
